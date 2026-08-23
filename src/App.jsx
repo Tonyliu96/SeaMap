@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Waves } from "lucide-react";
 import Sidebar from "./components/Sidebar.jsx";
 import MarineMap from "./components/MarineMap.jsx";
 import { fetchTideInfo } from "./data/tides.js";
+import {
+  createTranslator,
+  getInitialLanguage,
+  persistLanguage
+} from "./data/localization.js";
 
 export default function App() {
+  const [language, setLanguage] = useState(getInitialLanguage);
   const [baseMap, setBaseMap] = useState("streets");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [lidarEnabled, setLidarEnabled] = useState(false);
@@ -23,8 +28,15 @@ export default function App() {
   const [tideCoordinate, setTideCoordinate] = useState({
     lat: -33.8688,
     lng: 151.2093,
-    source: "Map center"
+    sourceKey: "map.center"
   });
+
+  const t = useMemo(() => createTranslator(language), [language]);
+
+  const updateLanguage = useCallback((nextLanguage) => {
+    setLanguage(nextLanguage);
+    persistLanguage(nextLanguage);
+  }, []);
 
   const mapState = useMemo(
     () => ({
@@ -64,9 +76,9 @@ export default function App() {
       setTideStatus("ready");
     } catch {
       setTideStatus("error");
-      setTideError("Unable to load tide and marine conditions.");
+      setTideError(t("tide.error"));
     }
-  }, [tideCoordinate]);
+  }, [t, tideCoordinate]);
 
   const queryPointTide = useCallback(async (coordinate) => {
     setSelectedTideInfo({ status: "loading", coordinate });
@@ -90,11 +102,15 @@ export default function App() {
         selectedTideInfo={selectedTideInfo}
         setSelectedTideInfo={setSelectedTideInfo}
         onTidePointQuery={queryPointTide}
+        t={t}
       />
 
       
 
       <Sidebar
+        language={language}
+        setLanguage={updateLanguage}
+        t={t}
         baseMap={baseMap}
         setBaseMap={setBaseMap}
         isOpen={sidebarOpen}

@@ -7,7 +7,6 @@ const SEED_BATHYMETRY_SERVICE =
   "https://mapprod2.environment.nsw.gov.au/arcgis/rest/services/Coastal_Marine/NSW_Marine_Lidar_Bathymetry_Data_2018/MapServer";
 
 const seedLayerIds = {
-  isobaths: 0,
   slope: 1,
   dem: 2
 };
@@ -21,11 +20,9 @@ const AUSSEABED_BATHYMETRY_2026 =
 export default function SeedBathymetryLayer({
   enabled,
   showDem,
-  showIsobaths,
   showSlope,
   opacity,
-  selectedState,
-  onMove
+  selectedState
 }) {
   const map = useMap();
   const useSeedNsw = selectedState === "NSW";
@@ -66,8 +63,6 @@ export default function SeedBathymetryLayer({
     const layerIds = [];
     if (showDem) layerIds.push(seedLayerIds.dem);
     if (showSlope) layerIds.push(seedLayerIds.slope);
-    if (showIsobaths) layerIds.push(seedLayerIds.isobaths);
-
     if (layerIds.length === 0) return undefined;
 
     const layer = dynamicMapLayer({
@@ -87,7 +82,7 @@ export default function SeedBathymetryLayer({
       map.removeLayer(layer);
       if (layerRef.current === layer) layerRef.current = null;
     };
-  }, [enabled, map, selectedState, showDem, showIsobaths, showSlope, useSeedNsw]);
+  }, [enabled, map, selectedState, showDem, showSlope, useSeedNsw]);
 
   useEffect(() => {
     layerRef.current?.setOpacity(opacity);

@@ -8,9 +8,11 @@ import {
   useMapEvents
 } from "react-leaflet";
 import L from "leaflet";
+import IsobathLayer from "./IsobathLayer.jsx";
 import MarineProtectedAreasLayer from "./MarineProtectedAreasLayer.jsx";
 import SeedBathymetryLayer from "./SeedBathymetryLayer.jsx";
 import { loadNswLidarCoverage } from "../data/nswLidar.js";
+import { escapeHtml } from "../data/localization.js";
 import {
   formatMeters,
   formatSeconds,
@@ -48,7 +50,8 @@ export default function MarineMap({
   selectedRegion,
   selectedTideInfo,
   setSelectedTideInfo,
-  onTidePointQuery
+  onTidePointQuery,
+  t
 }) {
   const [cursor, setCursor] = useState({
     lat: -33.8688,
@@ -104,18 +107,21 @@ export default function MarineMap({
       <SeedBathymetryLayer
         enabled={bathymetryEnabled}
         showDem={showBathymetryDem}
-        showIsobaths={showIsobaths}
         showSlope={showSlope}
         opacity={bathymetryOpacity}
         selectedState={selectedRegion}
-        onMove={setCursor}
+      />
+
+      <IsobathLayer
+        enabled={bathymetryEnabled && showIsobaths && selectedRegion === "NSW"}
+        opacity={bathymetryOpacity}
       />
 
       <MarineProtectedAreasLayer
         enabled={marineProtectedEnabled}
         selectedState={selectedRegion}
         opacity={marineProtectedOpacity}
-        onMove={setCursor}
+        t={t}
       />
 
       <Pane name="nsw-lidar-coverage" style={{ zIndex: 440 }}>
@@ -136,16 +142,17 @@ export default function MarineMap({
       <SelectedTidePopup
         selectedTideInfo={selectedTideInfo}
         setSelectedTideInfo={setSelectedTideInfo}
+        t={t}
       />
 
       <div className="absolute bottom-4 right-4 z-[650] rounded-lg border border-white/15 bg-slate-900/80 px-3 py-2 text-xs text-slate-100 shadow-marine backdrop-blur-md">
-        <div>Lat {cursor.lat.toFixed(5)}</div>
-        <div>Lng {cursor.lng.toFixed(5)}</div>
-        <div>Zoom {cursor.zoom}</div>
+        <div>{t("telemetry.lat")} {cursor.lat.toFixed(5)}</div>
+        <div>{t("telemetry.lng")} {cursor.lng.toFixed(5)}</div>
+        <div>{t("telemetry.zoom")} {cursor.zoom}</div>
         <div>
-          LiDAR{" "}
+          {t("telemetry.lidar")}{" "}
           {lidarStatus === "ready"
-            ? `${lidarCoverage?.features?.length ?? 0} polygons`
+            ? `${lidarCoverage?.features?.length ?? 0} ${t("telemetry.polygons")}`
             : lidarStatus}
         </div>
       </div>
@@ -159,7 +166,7 @@ function MapTideQuery({ onTidePointQuery }) {
       onTidePointQuery?.({
         lat: event.latlng.lat,
         lng: event.latlng.lng,
-        source: "Selected location"
+        sourceKey: "map.selectedLocation"
       });
     }
   });
@@ -167,7 +174,7 @@ function MapTideQuery({ onTidePointQuery }) {
   return null;
 }
 
-function SelectedTidePopup({ selectedTideInfo, setSelectedTideInfo }) {
+function SelectedTidePopup({ selectedTideInfo, setSelectedTideInfo, t }) {
   const map = useMapEvents({});
   const popupRef = useRef(null);
 
@@ -181,7 +188,7 @@ function SelectedTidePopup({ selectedTideInfo, setSelectedTideInfo }) {
 
     const popup = L.popup({ maxWidth: 340 })
       .setLatLng(latlng)
-      .setContent(renderTidePopup(selectedTideInfo))
+      .setContent(renderTidePopup(selectedTideInfo, t))
       .openOn(map);
 
     popup.on("remove", () => {
@@ -193,19 +200,19 @@ function SelectedTidePopup({ selectedTideInfo, setSelectedTideInfo }) {
       popup.off("remove");
       if (popupRef.current === popup) popupRef.current = null;
     };
-  }, [map, selectedTideInfo, setSelectedTideInfo]);
+  }, [map, selectedTideInfo, setSelectedTideInfo, t]);
 
   return null;
 }
 
-function renderTidePopup(selectedTideInfo) {
+function renderTidePopup(selectedTideInfo, t) {
   const coordinate = selectedTideInfo.coordinate;
 
   if (selectedTideInfo.status === "loading") {
     return `
       <div class="min-w-60 text-slate-900">
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">Tide / Marine</p>
-        <p class="mt-2 text-sm">Loading tide and marine conditions for this location...</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">${escapeHtml(t("section.tide"))}</p>
+        <p class="mt-2 text-sm">${escapeHtml(t("tide.loadingLocation"))}</p>
         <p class="mt-1 text-xs text-slate-500">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
       </div>
     `;
@@ -214,8 +221,8 @@ function renderTidePopup(selectedTideInfo) {
   if (selectedTideInfo.status === "error" || !selectedTideInfo.info) {
     return `
       <div class="min-w-60 text-slate-900">
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">Tide / Marine</p>
-        <p class="mt-2 text-sm">Unable to load tide and marine conditions for this location.</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">${escapeHtml(t("section.tide"))}</p>
+        <p class="mt-2 text-sm">${escapeHtml(t("tide.errorLocation"))}</p>
         <p class="mt-1 text-xs text-slate-500">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
       </div>
     `;
@@ -232,9 +239,9 @@ function renderTidePopup(selectedTideInfo) {
             .map(
               (event) => `
                 <div class="grid grid-cols-[48px_1fr_auto] gap-2 text-xs text-slate-700">
-                  <span>${event.kind === "high" ? "High" : "Low"}</span>
+                  <span>${escapeHtml(event.kind === "high" ? t("tide.high") : t("tide.low"))}</span>
                   <span>${formatTideTime(event.time)}</span>
-                  <strong>${formatMeters(event.height)}</strong>
+                  <strong>${formatMeters(event.height, t)}</strong>
                 </div>
               `
             )
@@ -247,24 +254,24 @@ function renderTidePopup(selectedTideInfo) {
   return `
     <div class="min-w-64 max-h-[500px] space-y-2 overflow-y-auto pr-1 text-slate-900 [scrollbar-color:rgba(2,132,199,0.6)_rgba(226,232,240,0.8)] [scrollbar-width:thin]">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">Tide / Marine</p>
-        <p class="text-sm font-semibold">Selected Location Tide</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">${escapeHtml(t("section.tide"))}</p>
+        <p class="text-sm font-semibold">${escapeHtml(t("tide.selectedTitle"))}</p>
         <p class="text-xs text-slate-500">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
       </div>
       <div class="rounded-md border border-sky-100 bg-sky-50 px-3 py-2">
-        <p class="text-xs font-semibold text-slate-700">Next Three Days</p>
+        <p class="text-xs font-semibold text-slate-700">${escapeHtml(t("tide.nextThreeDays"))}</p>
         <div class="mt-1 max-h-[120px] overflow-y-auto pr-1 [scrollbar-color:rgba(2,132,199,0.55)_rgba(226,232,240,0.75)] [scrollbar-width:thin]">
-          ${rows || '<p class="text-xs text-slate-500">N/A</p>'}
+          ${rows || `<p class="text-xs text-slate-500">${escapeHtml(t("notAvailable"))}</p>`}
         </div>
       </div>
       <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-700">
-        <span>Sea level</span><strong>${formatMeters(info.currentSeaLevel)}</strong>
-        <span>Wave height</span><strong>${formatMeters(info.waveHeight)}</strong>
-        <span>Wave period</span><strong>${formatSeconds(info.wavePeriod)}</strong>
-        <span>Wind speed</span><strong>${formatWindSpeed(info.windSpeed)}</strong>
-        <span>Wind direction</span><strong>${formatWindDirection(info.windDirection)}</strong>
+        <span>${escapeHtml(t("tide.seaLevel"))}</span><strong>${formatMeters(info.currentSeaLevel, t)}</strong>
+        <span>${escapeHtml(t("tide.waveHeight"))}</span><strong>${formatMeters(info.waveHeight, t)}</strong>
+        <span>${escapeHtml(t("tide.wavePeriod"))}</span><strong>${formatSeconds(info.wavePeriod, t)}</strong>
+        <span>${escapeHtml(t("tide.windSpeed"))}</span><strong>${formatWindSpeed(info.windSpeed, t)}</strong>
+        <span>${escapeHtml(t("tide.windDirection"))}</span><strong>${formatWindDirection(info.windDirection, t)}</strong>
       </div>
-      <p class="text-[11px] leading-4 text-slate-500">Tide values are modelled and may be inaccurate nearshore or inside harbours. Do not use for navigation or safety decisions.</p>
+      <p class="text-[11px] leading-4 text-slate-500">${escapeHtml(t("tide.popupNote"))}</p>
     </div>
   `;
 }

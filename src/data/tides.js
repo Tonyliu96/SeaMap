@@ -55,28 +55,28 @@ export function groupThreeDayTideEvents(info) {
   }));
 }
 
-export function formatMeters(value) {
-  if (!Number.isFinite(value)) return "N/A";
+export function formatMeters(value, t = fallbackTranslator) {
+  if (!Number.isFinite(value)) return t("notAvailable");
   return `${value.toFixed(2)} m`;
 }
 
-export function formatSeconds(value) {
-  if (!Number.isFinite(value)) return "N/A";
+export function formatSeconds(value, t = fallbackTranslator) {
+  if (!Number.isFinite(value)) return t("notAvailable");
   return `${value.toFixed(1)} s`;
 }
 
-export function formatWindSpeed(value) {
-  if (!Number.isFinite(value)) return "N/A";
+export function formatWindSpeed(value, t = fallbackTranslator) {
+  if (!Number.isFinite(value)) return t("notAvailable");
   return `${value.toFixed(1)} km/h`;
 }
 
-export function formatWindDirection(value) {
-  if (!Number.isFinite(value)) return "N/A";
-  return `${windCompass(value)} ${Math.round(value)}°`;
+export function formatWindDirection(value, t = fallbackTranslator) {
+  if (!Number.isFinite(value)) return t("notAvailable");
+  return `${windCompass(value, t)} ${Math.round(value)}°`;
 }
 
 export function formatTideTime(date) {
-  if (!(date instanceof Date)) return "N/A";
+  if (!(date instanceof Date)) return fallbackTranslator("notAvailable");
   return new Intl.DateTimeFormat("en-AU", {
     hour: "2-digit",
     minute: "2-digit",
@@ -183,7 +183,7 @@ function formatDateKey(date) {
 }
 
 function formatDayLabel(date) {
-  if (!(date instanceof Date)) return "N/A";
+  if (!(date instanceof Date)) return fallbackTranslator("notAvailable");
   return new Intl.DateTimeFormat("en-AU", {
     weekday: "short",
     month: "short",
@@ -192,7 +192,31 @@ function formatDayLabel(date) {
   }).format(date);
 }
 
-function windCompass(degrees) {
-  const labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-  return labels[Math.round(degrees / 45) % labels.length];
+function windCompass(degrees, t) {
+  const keys = [
+    "compass.n",
+    "compass.ne",
+    "compass.e",
+    "compass.se",
+    "compass.s",
+    "compass.sw",
+    "compass.w",
+    "compass.nw"
+  ];
+  return t(keys[Math.round(degrees / 45) % keys.length]);
+}
+
+function fallbackTranslator(key) {
+  const values = {
+    notAvailable: "N/A",
+    "compass.n": "N",
+    "compass.ne": "NE",
+    "compass.e": "E",
+    "compass.se": "SE",
+    "compass.s": "S",
+    "compass.sw": "SW",
+    "compass.w": "W",
+    "compass.nw": "NW"
+  };
+  return values[key] ?? key;
 }

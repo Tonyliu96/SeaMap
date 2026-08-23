@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { dynamicMapLayer } from "esri-leaflet";
 import L from "leaflet";
 import { useMap } from "react-leaflet";
+import { escapeHtml } from "../data/localization.js";
 
 const CAPAD_SERVICE =
   "https://gis.environment.gov.au/gispubmap/rest/services/ogc_services/CAPAD/MapServer";
@@ -13,7 +14,7 @@ export default function MarineProtectedAreasLayer({
   enabled,
   selectedState,
   opacity,
-  onMove
+  t
 }) {
   const map = useMap();
   const layerRef = useRef(null);
@@ -78,13 +79,13 @@ export default function MarineProtectedAreasLayer({
 
         L.popup({ maxWidth: 320 })
           .setLatLng(event.latlng)
-          .setContent(renderProtectionPopup(attributes))
+          .setContent(renderProtectionPopup(attributes, t))
           .openOn(map);
       } catch {
         L.popup({ maxWidth: 280 })
           .setLatLng(event.latlng)
           .setContent(
-            '<div class="text-sm text-slate-900">Unable to query this marine protected area.</div>'
+            `<div class="text-sm text-slate-900">${escapeHtml(t("mpa.queryError"))}</div>`
           )
           .openOn(map);
       }
@@ -95,64 +96,55 @@ export default function MarineProtectedAreasLayer({
     return () => {
       map.off("click", handleClick);
     };
-  }, [enabled, map, selectedState]);
+  }, [enabled, map, selectedState, t]);
 
   return null;
 }
 
-function renderProtectionPopup(attributes) {
-  const fishing = describeFishingRestriction(attributes);
+function renderProtectionPopup(attributes, t) {
+  const fishingKey = fishingRestrictionKey(attributes);
 
   return `
     <div class="min-w-56 space-y-2 text-slate-900">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">Marine Protected Area</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">${escapeHtml(t("mpa.title"))}</p>
         <p class="text-sm font-semibold">${escapeHtml(attributes.NAME ?? "Unnamed protected area")}</p>
       </div>
       <div class="space-y-1 text-xs text-slate-600">
-        <p><strong>Type:</strong> ${escapeHtml(attributes.TYPE ?? "N/A")}</p>
-        <p><strong>Zone:</strong> ${escapeHtml(attributes.COMMENTS ?? attributes.ZONE_TYPE ?? "N/A")}</p>
-        <p><strong>IUCN:</strong> ${escapeHtml(attributes.IUCN ?? "N/A")} · <strong>Authority:</strong> ${escapeHtml(attributes.AUTHORITY ?? "N/A")}</p>
+        <p><strong>${escapeHtml(t("mpa.type"))}:</strong> ${escapeHtml(attributes.TYPE ?? t("notAvailable"))}</p>
+        <p><strong>${escapeHtml(t("mpa.zone"))}:</strong> ${escapeHtml(attributes.COMMENTS ?? attributes.ZONE_TYPE ?? t("notAvailable"))}</p>
+        <p><strong>IUCN:</strong> ${escapeHtml(attributes.IUCN ?? t("notAvailable"))} · <strong>${escapeHtml(t("mpa.authority"))}:</strong> ${escapeHtml(attributes.AUTHORITY ?? t("notAvailable"))}</p>
       </div>
       <div class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-950">
-        <p class="font-semibold">Fishing restrictions</p>
-        <p>${escapeHtml(fishing)}</p>
+        <p class="font-semibold">${escapeHtml(t("mpa.fishing"))}</p>
+        <p>${escapeHtml(t(fishingKey))}</p>
       </div>
     </div>
   `;
 }
 
-function describeFishingRestriction(attributes) {
+function fishingRestrictionKey(attributes) {
   const text = `${attributes.TYPE ?? ""} ${attributes.ZONE_TYPE ?? ""} ${attributes.COMMENTS ?? ""} ${attributes.IUCN ?? ""}`.toLowerCase();
 
   if (text.includes("sanctuary") || attributes.IUCN === "Ia" || attributes.IUCN === "II") {
-    return "Strong restrictions: this is usually a sanctuary/no-take area where fishing and collecting are generally not allowed. Check the local management rules.";
+    return "fishing.sanctuary";
   }
 
   if (text.includes("habitat protection")) {
-    return "Fishing is restricted: some fishing may be allowed, but gear, collecting or anchoring can be limited. Check the protected area management rules.";
+    return "fishing.habitat";
   }
 
   if (text.includes("special purpose")) {
-    return "Special purpose zone: fishing rules depend on the purpose and management plan, and some activities may be restricted.";
+    return "fishing.special";
   }
 
   if (text.includes("aquatic reserve")) {
-    return "Aquatic reserve: collecting, taking fish or invertebrates, or specific fishing methods are often restricted. Check the local rules.";
+    return "fishing.aquatic";
   }
 
   if (text.includes("general use") || attributes.IUCN === "VI") {
-    return "General use area: fishing may be allowed, but state/federal fishing rules and the protected area management plan still apply.";
+    return "fishing.general";
   }
 
-  return "This layer does not provide the full legal text for fishing rules. Check the protected area management plan or local fisheries rules.";
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  return "fishing.unknown";
 }

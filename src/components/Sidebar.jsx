@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ChevronsUpDown,
   ExternalLink,
   Layers,
@@ -16,6 +14,7 @@ import {
 } from "lucide-react";
 import { australiaStates } from "../data/australiaStates.js";
 import { loadNswLidarCatalog } from "../data/nswLidar.js";
+import { languageOptions } from "../data/localization.js";
 import {
   formatMeters,
   formatSeconds,
@@ -27,11 +26,14 @@ import {
 } from "../data/tides.js";
 
 const baseMaps = [
-  { id: "streets", label: "Streets / Terrain", icon: Map },
-  { id: "satellite", label: "High-Resolution Satellite", icon: Satellite }
+  { id: "streets", labelKey: "base.streets", icon: Map },
+  { id: "satellite", labelKey: "base.satellite", icon: Satellite }
 ];
 
 export default function Sidebar({
+  language,
+  setLanguage,
+  t,
   baseMap,
   setBaseMap,
   isOpen,
@@ -88,7 +90,7 @@ export default function Sidebar({
     <>
       <button
         type="button"
-        aria-label={isOpen ? "Collapse control panel" : "Expand control panel"}
+        aria-label={isOpen ? t("panel.collapse") : t("panel.expand")}
         className="absolute left-6 top-10 z-[720] hidden h-11 w-11 place-items-center rounded-lg border border-white/15 bg-slate-900/80 text-slate-100 shadow-marine backdrop-blur-md transition hover:bg-sky-900/70 md:grid"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -110,16 +112,16 @@ export default function Sidebar({
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-cyan-400/15 text-cyan-300">
               <Layers size={18} />
             </div>
-            <div className="min-w-0">
-              <h2 className="truncate text-sm font-semibold">Layer Controls</h2>
+          <div className="min-w-0">
+              <h2 className="truncate text-sm font-semibold">{t("layer.title")}</h2>
               <p className="truncate text-xs text-slate-300">
-                Base maps and NSW LiDAR coverage
+                {t("layer.subtitle")}
               </p>
             </div>
           </div>
           <button
             type="button"
-            aria-label={isOpen ? "Collapse control panel" : "Expand control panel"}
+            aria-label={isOpen ? t("panel.collapse") : t("panel.expand")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-slate-200 transition hover:bg-white/10 md:hidden"
             onClick={() => setIsOpen(!isOpen)}
           >
@@ -134,7 +136,26 @@ export default function Sidebar({
           className={`max-h-[calc(100dvh-11rem)] space-y-5 overflow-y-auto overscroll-contain px-4 py-4 md:max-h-[calc(100dvh-11rem)] ${isOpen ? "block" : "hidden md:block"
             }`}
         >
-          <Section title="Base Maps" icon={Map}>
+          <Section title={t("language.section")} icon={SlidersHorizontal}>
+            <label className="block rounded-md border border-white/10 bg-white/5 p-3">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                {t("language.current")}
+              </span>
+              <select
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                className="h-10 w-full rounded-md border border-white/10 bg-slate-950/70 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300"
+              >
+                {languageOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {t(option.labelKey)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </Section>
+
+          <Section title={t("section.baseMaps")} icon={Map}>
             <div className="grid grid-cols-2 gap-2">
               {baseMaps.map((item) => {
                 const Icon = item.icon;
@@ -150,17 +171,17 @@ export default function Sidebar({
                     onClick={() => setBaseMap(item.id)}
                   >
                     <Icon size={18} />
-                    <span>{item.label}</span>
+                    <span>{t(item.labelKey)}</span>
                   </button>
                 );
               })}
             </div>
           </Section>
 
-          <Section title="State / Territory" icon={Map}>
+          <Section title={t("section.region")} icon={Map}>
             <label className="block rounded-md border border-white/10 bg-white/5 p-3">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
-                Current Region
+                {t("region.current")}
               </span>
               <select
                 value={selectedRegion}
@@ -176,14 +197,14 @@ export default function Sidebar({
             </label>
           </Section>
 
-          <Section title="SEED Bathymetry Layers" icon={Layers}>
+          <Section title={t("section.bathymetry")} icon={Layers}>
             <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-3">
               <span className="min-w-0">
-                <span className="block text-sm text-slate-100">Show bathymetry data</span>
+                <span className="block text-sm text-slate-100">{t("bathymetry.show")}</span>
                 <span className="block truncate text-xs text-slate-400">
                   {isNswBathymetry
-                    ? "NSW SEED Marine LiDAR Bathymetry 2018"
-                    : "AusSeabed AusBathyTopo Australia 250m 2026"}
+                    ? t("bathymetry.nswSource")
+                    : t("bathymetry.ausSource")}
                 </span>
               </span>
               <input
@@ -199,26 +220,26 @@ export default function Sidebar({
 
             <div className={bathymetryEnabled ? "mt-3 space-y-2" : "mt-3 space-y-2 opacity-45"}>
               <LayerCheck
-                label="Bathymetry DEM - metres"
+                label={t("bathymetry.dem")}
                 checked={showBathymetryDem}
                 disabled={!bathymetryEnabled}
                 onChange={setShowBathymetryDem}
               />
               <LayerCheck
-                label="Isobaths at 5m depth intervals (NSW only)"
+                label={t("bathymetry.isobaths")}
                 checked={showIsobaths}
                 disabled={!bathymetryEnabled || !isNswBathymetry}
                 onChange={setShowIsobaths}
               />
               <LayerCheck
-                label="Slope - degrees (NSW only)"
+                label={t("bathymetry.slope")}
                 checked={showSlope}
                 disabled={!bathymetryEnabled || !isNswBathymetry}
                 onChange={setShowSlope}
               />
               {!isNswBathymetry && (
                 <p className="rounded-md border border-cyan-300/20 bg-cyan-400/10 px-3 py-2 text-xs leading-5 text-cyan-100">
-                  This region uses the AusSeabed national bathymetry raster. The 5m isobath and slope layers are available only from the NSW SEED service.
+                  {t("bathymetry.nonNswNote")}
                 </p>
               )}
 
@@ -226,7 +247,7 @@ export default function Sidebar({
                 <div className="mb-3 flex items-center justify-between gap-3 text-sm">
                   <span className="flex items-center gap-2 text-slate-100">
                     <SlidersHorizontal size={16} />
-                    Opacity
+                    {t("opacity")}
                   </span>
                   <span className="font-medium text-emerald-200">
                     {bathymetryOpacity}%
@@ -250,14 +271,14 @@ export default function Sidebar({
             </div>
           </Section>
 
-          <Section title="Marine Protected Areas" icon={ShieldCheck}>
+          <Section title={t("section.mpa")} icon={ShieldCheck}>
             <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-3">
               <span className="min-w-0">
                 <span className="block text-sm text-slate-100">
-                  Show marine protected areas
+                  {t("mpa.show")}
                 </span>
                 <span className="block truncate text-xs text-slate-400">
-                  CAPAD 2024 Marine Protected Areas
+                  {t("mpa.source")}
                 </span>
               </span>
               <input
@@ -282,7 +303,7 @@ export default function Sidebar({
                 <div className="mb-3 flex items-center justify-between gap-3 text-sm">
                   <span className="flex items-center gap-2 text-slate-100">
                     <SlidersHorizontal size={16} />
-                    Opacity
+                    {t("opacity")}
                   </span>
                   <span className="font-medium text-sky-200">
                     {marineProtectedOpacity}%
@@ -306,22 +327,23 @@ export default function Sidebar({
             </div>
           </Section>
 
-          <Section title="Tide / Marine" icon={Waves}>
+          <Section title={t("section.tide")} icon={Waves}>
             <TidePanel
               tideInfo={tideInfo}
               tideStatus={tideStatus}
               tideError={tideError}
               tideCoordinate={tideCoordinate}
               onRefreshTide={onRefreshTide}
+              t={t}
             />
           </Section>
 
-          <Section title="NSW LiDAR Coverage" icon={SquareStack}>
+          <Section title={t("section.lidar")} icon={SquareStack}>
             <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-3">
               <span className="min-w-0">
-                <span className="block text-sm text-slate-100">Show coverage polygons</span>
+                <span className="block text-sm text-slate-100">{t("lidar.show")}</span>
                 <span className="block truncate text-xs text-slate-400">
-                  Marine_NSWCoastalLidarCoverage_20190827
+                  {t("lidar.source")}
                 </span>
               </span>
               <input
@@ -335,7 +357,7 @@ export default function Sidebar({
               </span>
             </label>
             <p className="mt-2 text-xs leading-5 text-slate-400">
-              Loads 48 converted NSW Coastal LiDAR coverage polygons.
+              {t("lidar.note")}
             </p>
 
             <div className="mt-3 overflow-hidden rounded-md border border-white/10 bg-slate-950/30">
@@ -345,7 +367,7 @@ export default function Sidebar({
                 onClick={() => setCatalogOpen((value) => !value)}
               >
                 <span>
-                  Source Data Links{" "}
+                  {t("lidar.links")}{" "}
                   {catalogStatus === "ready"
                     ? `(${lidarCatalog.length})`
                     : catalogStatus}
@@ -373,7 +395,7 @@ export default function Sidebar({
                             {record.location}
                           </p>
                           <p className="truncate text-[11px] text-slate-400">
-                            {record.project} · {record.captured ?? "Unknown date"}
+                            {record.project} · {record.captured ?? t("unknownDate")}
                           </p>
                         </div>
                         <ExternalLink
@@ -385,7 +407,7 @@ export default function Sidebar({
                   ))}
                   {catalogStatus === "error" && (
                     <p className="px-3 py-2 text-xs text-rose-200">
-                      Unable to load the LiDAR data catalog.
+                      {t("lidar.error")}
                     </p>
                   )}
                 </div>
@@ -404,7 +426,8 @@ function TidePanel({
   tideStatus,
   tideError,
   tideCoordinate,
-  onRefreshTide
+  onRefreshTide,
+  t
 }) {
   const [futureOpen, setFutureOpen] = useState(false);
   const todayEvents = getTodayTideEvents(tideInfo);
@@ -414,9 +437,9 @@ function TidePanel({
     <div className="max-h-[180px] space-y-3 overflow-y-auto overscroll-contain rounded-md border border-white/10 bg-white/5 p-3 [scrollbar-color:rgba(103,232,249,0.55)_rgba(15,23,42,0.45)] [scrollbar-width:thin]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-100">Current Location Tide</p>
+          <p className="text-sm font-semibold text-slate-100">{t("tide.currentTitle")}</p>
           <p className="truncate text-[11px] text-slate-400">
-            {tideCoordinate?.source ?? "Map center"}{" "}
+            {t(tideCoordinate?.sourceKey ?? "map.center")}{" "}
             {Number.isFinite(tideCoordinate?.lat)
               ? `${tideCoordinate.lat.toFixed(4)}, ${tideCoordinate.lng.toFixed(4)}`
               : ""}
@@ -427,7 +450,7 @@ function TidePanel({
           className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/10 bg-white/5 text-cyan-200 transition hover:bg-white/10 disabled:cursor-wait disabled:opacity-50"
           disabled={tideStatus === "loading"}
           onClick={() => onRefreshTide?.()}
-          title="Refresh tide"
+          title={t("tide.refresh")}
         >
           <RefreshCw
             size={15}
@@ -443,22 +466,22 @@ function TidePanel({
       )}
 
       {tideStatus === "loading" && !tideInfo ? (
-        <p className="text-xs text-slate-400">Loading tide and marine conditions...</p>
+        <p className="text-xs text-slate-400">{t("tide.loading")}</p>
       ) : tideInfo ? (
         <>
           <div className="space-y-2">
             <CompactTideMetrics
               items={[
-                ["Sea level", formatMeters(tideInfo.currentSeaLevel)],
-                ["Wave height", formatMeters(tideInfo.waveHeight)],
-                ["Wave period", formatSeconds(tideInfo.wavePeriod)],
-                ["Wind speed", formatWindSpeed(tideInfo.windSpeed)],
-                ["Wind direction", formatWindDirection(tideInfo.windDirection)]
+                [t("tide.seaLevel"), formatMeters(tideInfo.currentSeaLevel, t)],
+                [t("tide.waveHeight"), formatMeters(tideInfo.waveHeight, t)],
+                [t("tide.wavePeriod"), formatSeconds(tideInfo.wavePeriod, t)],
+                [t("tide.windSpeed"), formatWindSpeed(tideInfo.windSpeed, t)],
+                [t("tide.windDirection"), formatWindDirection(tideInfo.windDirection, t)]
               ]}
             />
             <div className="rounded-md border border-sky-300/15 bg-sky-400/10 p-2">
-              <p className="mb-2 text-xs font-semibold text-sky-100">Today's Tide</p>
-              <TideEventRows events={todayEvents} />
+              <p className="mb-2 text-xs font-semibold text-sky-100">{t("tide.today")}</p>
+              <TideEventRows events={todayEvents} t={t} />
             </div>
 
             <div className="overflow-hidden rounded-md border border-white/10 bg-slate-950/30">
@@ -468,7 +491,7 @@ function TidePanel({
                 onClick={() => setFutureOpen((value) => !value)}
               >
                 <span>
-                  Next Three Days{" "}
+                  {t("tide.nextThreeDays")}{" "}
                   {groups.length ? `(${groups.reduce((sum, group) => sum + group.events.length, 0)})` : ""}
                 </span>
                 <ChevronsUpDown
@@ -484,11 +507,11 @@ function TidePanel({
                       <p className="mb-1 text-[11px] font-semibold text-cyan-200">
                         {group.label}
                       </p>
-                      <TideEventRows events={group.events} />
+                      <TideEventRows events={group.events} t={t} />
                     </div>
                   ))}
                   {!groups.length && (
-                    <p className="px-3 py-2 text-xs text-slate-500">N/A</p>
+                    <p className="px-3 py-2 text-xs text-slate-500">{t("notAvailable")}</p>
                   )}
                 </div>
               )}
@@ -496,19 +519,19 @@ function TidePanel({
           </div>
 
           <p className="text-[11px] leading-4 text-slate-500">
-            Tide values are modelled and may be inaccurate nearshore or inside harbours. Do not use for navigation or safety decisions. Right-click or long-press the map to query a selected location.
+            {t("tide.note")}
           </p>
         </>
       ) : (
-        <p className="text-xs text-slate-400">Click refresh to load tide, wave and wind data.</p>
+        <p className="text-xs text-slate-400">{t("tide.empty")}</p>
       )}
     </div>
   );
 }
 
-function TideEventRows({ events }) {
+function TideEventRows({ events, t }) {
   if (!events?.length) {
-    return <p className="text-xs text-slate-500">N/A</p>;
+    return <p className="text-xs text-slate-500">{t("notAvailable")}</p>;
   }
 
   return (
@@ -518,10 +541,10 @@ function TideEventRows({ events }) {
           key={`${event.kind}-${event.time.toISOString()}`}
           className="grid grid-cols-[44px_1fr_auto] gap-2 text-xs text-slate-300"
         >
-          <span>{event.kind === "high" ? "High" : "Low"}</span>
+          <span>{event.kind === "high" ? t("tide.high") : t("tide.low")}</span>
           <span className="font-mono tabular-nums">{formatTideTime(event.time)}</span>
           <span className="font-semibold text-slate-100">
-            {formatMeters(event.height)}
+            {formatMeters(event.height, t)}
           </span>
         </div>
       ))}
