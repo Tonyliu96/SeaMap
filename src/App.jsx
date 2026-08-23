@@ -1,0 +1,128 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Waves } from "lucide-react";
+import Sidebar from "./components/Sidebar.jsx";
+import MarineMap from "./components/MarineMap.jsx";
+import { fetchTideInfo } from "./data/tides.js";
+
+export default function App() {
+  const [baseMap, setBaseMap] = useState("streets");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [lidarEnabled, setLidarEnabled] = useState(false);
+  const [bathymetryEnabled, setBathymetryEnabled] = useState(true);
+  const [showBathymetryDem, setShowBathymetryDem] = useState(false);
+  const [showIsobaths, setShowIsobaths] = useState(true);
+  const [showSlope, setShowSlope] = useState(false);
+  const [bathymetryOpacity, setBathymetryOpacity] = useState(68);
+  const [marineProtectedEnabled, setMarineProtectedEnabled] = useState(true);
+  const [marineProtectedOpacity, setMarineProtectedOpacity] = useState(58);
+  const [selectedRegion, setSelectedRegion] = useState("NSW");
+  const [tideInfo, setTideInfo] = useState(null);
+  const [selectedTideInfo, setSelectedTideInfo] = useState(null);
+  const [tideStatus, setTideStatus] = useState("idle");
+  const [tideError, setTideError] = useState("");
+  const [tideCoordinate, setTideCoordinate] = useState({
+    lat: -33.8688,
+    lng: 151.2093,
+    source: "Map center"
+  });
+
+  const mapState = useMemo(
+    () => ({
+      baseMap,
+      lidarEnabled,
+      bathymetryEnabled,
+      showBathymetryDem,
+      showIsobaths,
+      showSlope,
+      bathymetryOpacity: bathymetryOpacity / 100,
+      marineProtectedEnabled,
+      marineProtectedOpacity: marineProtectedOpacity / 100,
+      selectedRegion
+    }),
+    [
+      baseMap,
+      lidarEnabled,
+      bathymetryEnabled,
+      showBathymetryDem,
+      showIsobaths,
+      showSlope,
+      bathymetryOpacity,
+      marineProtectedEnabled,
+      marineProtectedOpacity,
+      selectedRegion
+    ]
+  );
+
+  const refreshTide = useCallback(async (coordinate = tideCoordinate) => {
+    setTideStatus("loading");
+    setTideError("");
+
+    try {
+      const info = await fetchTideInfo(coordinate);
+      setTideInfo(info);
+      setTideCoordinate(coordinate);
+      setTideStatus("ready");
+    } catch {
+      setTideStatus("error");
+      setTideError("Unable to load tide and marine conditions.");
+    }
+  }, [tideCoordinate]);
+
+  const queryPointTide = useCallback(async (coordinate) => {
+    setSelectedTideInfo({ status: "loading", coordinate });
+
+    try {
+      const info = await fetchTideInfo(coordinate);
+      setSelectedTideInfo({ status: "ready", info, coordinate });
+    } catch {
+      setSelectedTideInfo({ status: "error", coordinate });
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshTide(tideCoordinate);
+  }, []);
+
+  return (
+    <main className="relative h-dvh w-full overflow-hidden bg-slate-950 text-white">
+      <MarineMap
+        {...mapState}
+        selectedTideInfo={selectedTideInfo}
+        setSelectedTideInfo={setSelectedTideInfo}
+        onTidePointQuery={queryPointTide}
+      />
+
+      
+
+      <Sidebar
+        baseMap={baseMap}
+        setBaseMap={setBaseMap}
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+        lidarEnabled={lidarEnabled}
+        setLidarEnabled={setLidarEnabled}
+        bathymetryEnabled={bathymetryEnabled}
+        setBathymetryEnabled={setBathymetryEnabled}
+        showBathymetryDem={showBathymetryDem}
+        setShowBathymetryDem={setShowBathymetryDem}
+        showIsobaths={showIsobaths}
+        setShowIsobaths={setShowIsobaths}
+        showSlope={showSlope}
+        setShowSlope={setShowSlope}
+        bathymetryOpacity={bathymetryOpacity}
+        setBathymetryOpacity={setBathymetryOpacity}
+        marineProtectedEnabled={marineProtectedEnabled}
+        setMarineProtectedEnabled={setMarineProtectedEnabled}
+        marineProtectedOpacity={marineProtectedOpacity}
+        setMarineProtectedOpacity={setMarineProtectedOpacity}
+        selectedRegion={selectedRegion}
+        setSelectedRegion={setSelectedRegion}
+        tideInfo={tideInfo}
+        tideStatus={tideStatus}
+        tideError={tideError}
+        tideCoordinate={tideCoordinate}
+        onRefreshTide={refreshTide}
+      />
+    </main>
+  );
+}

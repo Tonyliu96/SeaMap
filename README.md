@@ -119,15 +119,7 @@ webApp/
 
 ## GitHub Upload Notes
 
-Do not commit generated dependencies or build output:
 
-```gitignore
-node_modules/
-dist/
-.DS_Store
-*.log
-.env
-.env.*
 ```
 
 The original Shapefile directory is large and duplicates the converted GeoJSON used by the app. It is usually better to exclude it:
