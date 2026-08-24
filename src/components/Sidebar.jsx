@@ -12,9 +12,9 @@ import {
   SquareStack,
   Waves
 } from "lucide-react";
-import { australiaStates } from "../contants/australiaStates.js";
+import { australiaStates } from "../constants/australiaStates.js";
 import { loadNswLidarCatalog } from "../services/nswLidar.js";
-import { languageOptions } from "../contants/localization.js";
+import { languageOptions } from "../constants/localization.js";
 import {
   formatMeters,
   formatSeconds,

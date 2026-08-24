@@ -12,7 +12,7 @@ import IsobathLayer from "../layers/IsobathLayer.jsx";
 import MarineProtectedAreasLayer from "../layers/MarineProtectedAreasLayer.jsx";
 import SeedBathymetryLayer from "../layers/SeedBathymetryLayer.jsx";
 import { loadNswLidarCoverage } from "../services/nswLidar.js";
-import { escapeHtml } from "../contants/localization.js";
+import { escapeHtml } from "../constants/localization.js";
 import {
   formatMeters,
   formatSeconds,

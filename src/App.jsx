@@ -6,7 +6,7 @@ import {
   createTranslator,
   getInitialLanguage,
   persistLanguage
-} from "./contants/localization.js";
+} from "./constants/localization.js";
 
 export default function App() {
   const [language, setLanguage] = useState(getInitialLanguage);
