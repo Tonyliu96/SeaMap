@@ -7,7 +7,7 @@ import {
   getFeatureLabelCoordinate,
   getIsobathColor,
   getIsobathWeight
-} from "../data/isobaths.js";
+} from "../contants/isobaths.js";
 
 const MIN_ISOBATH_ZOOM = 11;
 

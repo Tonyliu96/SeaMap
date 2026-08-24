@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "./components/Sidebar.jsx";
-import MarineMap from "./components/MarineMap.jsx";
-import { fetchTideInfo } from "./data/tides.js";
+import MarineMap from "./maps/MarineMap.jsx";
+import { fetchTideInfo } from "./services/tides.js";
 import {
   createTranslator,
   getInitialLanguage,
   persistLanguage
-} from "./data/localization.js";
+} from "./contants/localization.js";
 
 export default function App() {
   const [language, setLanguage] = useState(getInitialLanguage);

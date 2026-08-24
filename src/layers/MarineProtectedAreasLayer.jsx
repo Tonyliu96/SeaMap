@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { dynamicMapLayer } from "esri-leaflet";
 import L from "leaflet";
 import { useMap } from "react-leaflet";
-import { escapeHtml } from "../data/localization.js";
+import { escapeHtml } from "../contants/localization.js";
 
 const CAPAD_SERVICE =
   "https://gis.environment.gov.au/gispubmap/rest/services/ogc_services/CAPAD/MapServer";

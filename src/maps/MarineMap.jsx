@@ -8,11 +8,11 @@ import {
   useMapEvents
 } from "react-leaflet";
 import L from "leaflet";
-import IsobathLayer from "./IsobathLayer.jsx";
-import MarineProtectedAreasLayer from "./MarineProtectedAreasLayer.jsx";
-import SeedBathymetryLayer from "./SeedBathymetryLayer.jsx";
-import { loadNswLidarCoverage } from "../data/nswLidar.js";
-import { escapeHtml } from "../data/localization.js";
+import IsobathLayer from "../layers/IsobathLayer.jsx";
+import MarineProtectedAreasLayer from "../layers/MarineProtectedAreasLayer.jsx";
+import SeedBathymetryLayer from "../layers/SeedBathymetryLayer.jsx";
+import { loadNswLidarCoverage } from "../services/nswLidar.js";
+import { escapeHtml } from "../contants/localization.js";
 import {
   formatMeters,
   formatSeconds,
@@ -20,7 +20,7 @@ import {
   formatWindDirection,
   formatWindSpeed,
   groupThreeDayTideEvents
-} from "../data/tides.js";
+} from "../services/tides.js";
 
 const baseLayers = {
   streets: {

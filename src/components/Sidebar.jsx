@@ -12,9 +12,9 @@ import {
   SquareStack,
   Waves
 } from "lucide-react";
-import { australiaStates } from "../data/australiaStates.js";
-import { loadNswLidarCatalog } from "../data/nswLidar.js";
-import { languageOptions } from "../data/localization.js";
+import { australiaStates } from "../contants/australiaStates.js";
+import { loadNswLidarCatalog } from "../services/nswLidar.js";
+import { languageOptions } from "../contants/localization.js";
 import {
   formatMeters,
   formatSeconds,
@@ -23,7 +23,7 @@ import {
   formatWindSpeed,
   getTodayTideEvents,
   groupThreeDayTideEvents
-} from "../data/tides.js";
+} from "../services/tides.js";
 
 const baseMaps = [
   { id: "streets", labelKey: "base.streets", icon: Map },
