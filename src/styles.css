@@ -37,6 +37,71 @@ body {
   color: #67e8f9 !important;
 }
 
+.marine-attribution {
+  position: relative;
+  max-width: min(72vw, 560px);
+  min-height: 28px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  box-shadow: 0 14px 42px rgb(2 6 23 / 0.22);
+  cursor: pointer;
+  line-height: 20px !important;
+  transition:
+    width 160ms ease,
+    max-width 160ms ease,
+    padding 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.marine-attribution.is-collapsed {
+  width: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  white-space: nowrap;
+  background: rgb(15 23 42 / 0.86) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  text-indent: -9999px;
+}
+
+.marine-attribution.is-collapsed::before {
+  display: inline-flex;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #e0f2fe;
+  content: "©";
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 28px;
+  text-indent: 0;
+}
+
+.marine-attribution.is-collapsed a {
+  display: none !important;
+}
+
+.marine-attribution.is-expanded {
+  width: auto;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 4px 8px !important;
+  white-space: normal;
+}
+
+.marine-attribution:focus-visible {
+  outline: 2px solid rgb(103 232 249 / 0.85);
+  outline-offset: 2px;
+}
+
 .leaflet-control-zoom {
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 0.16) !important;
@@ -106,6 +171,6 @@ body {
 }
 
 
-.shadow-marine {
+/* .shadow-marine {
   box-shadow: 0 20px 60px -15px rgba(2, 6, 23, 0.5), 0 0 20px 0 rgba(14, 165, 233, 0.15);
-}
+} */

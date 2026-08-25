@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {GeoJSON, MapContainer, Pane, TileLayer, ZoomControl, useMapEvents} from "react-leaflet";
+import {GeoJSON, MapContainer, Pane, TileLayer, ZoomControl, useMap, useMapEvents} from "react-leaflet";
 import L from "leaflet";
 import AhoDepthLayer from "../layers/AhoDepthLayer.jsx";
 import BathymetryDemLayer from "../layers/BathymetryDemLayer.jsx";
@@ -81,6 +81,7 @@ export default function MarineMap({
       zoomControl={false}
       className="h-full w-full">
       <ZoomControl position="topright" />
+      <CollapsibleAttribution />
 
       <TileLayer
         key={baseMap}
@@ -138,6 +139,56 @@ export default function MarineMap({
       </div>
     </MapContainer>
   );
+}
+
+function CollapsibleAttribution() {
+  const map = useMap();
+
+  useEffect(() => {
+    const attribution = map.attributionControl?._container;
+    if (!attribution) return undefined;
+
+    const setExpanded = (expanded) => {
+      attribution.classList.toggle("is-expanded", expanded);
+      attribution.classList.toggle("is-collapsed", !expanded);
+      attribution.setAttribute("aria-expanded", String(expanded));
+    };
+
+    attribution.classList.add("marine-attribution", "is-collapsed");
+    attribution.setAttribute("role", "button");
+    attribution.setAttribute("tabindex", "0");
+    attribution.setAttribute("aria-label", "Map attribution");
+    attribution.setAttribute("aria-expanded", "false");
+
+    const onClick = (event) => {
+      event.stopPropagation();
+      setExpanded(!attribution.classList.contains("is-expanded"));
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        setExpanded(!attribution.classList.contains("is-expanded"));
+      }
+      if (event.key === "Escape") {
+        setExpanded(false);
+      }
+    };
+
+    attribution.addEventListener("click", onClick);
+    attribution.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      attribution.removeEventListener("click", onClick);
+      attribution.removeEventListener("keydown", onKeyDown);
+      attribution.classList.remove("marine-attribution", "is-collapsed", "is-expanded");
+      attribution.removeAttribute("role");
+      attribution.removeAttribute("tabindex");
+      attribution.removeAttribute("aria-label");
+      attribution.removeAttribute("aria-expanded");
+    };
+  }, [map]);
+
+  return null;
 }
 
 function MapTideQuery({ onTidePointQuery }) {
