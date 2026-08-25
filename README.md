@@ -2,6 +2,34 @@
 
 A modern React, Tailwind CSS and Leaflet web map for visualising Australian marine bathymetry, NSW coastal LiDAR coverage, marine protected areas, and tide / marine conditions.
 
+Vercel website address: https://sea-map.vercel.app/
+
+## Screenshots
+
+### Bathymetry DEM
+
+![Bathymetry DEM](public/Image/Bathymetry%20DEM.png)
+
+### Isobaths at 5m Depth Intervals
+
+![Isobaths at 5m depth intervals](public/Image/Isobaths_at_5m%20depth_intervals.png)
+
+### AHO Chart Explorer
+
+![AHO Chart Explorer](public/Image/AHO_Chart_Explorer.png)
+
+### Marine Protected Area
+
+![Marine Protected Area](public/Image/Marine_Protected_Area.png)
+
+### Tide / Marine Prompt
+
+![Tide / Marine Prompt](public/Image/Tide_or_Marine_Prompt.png)
+
+### Satellite Map
+
+![Satellite Map](public/Image/Saatellite%20Map.png)
+
 ## Features
 
 - Street / terrain and high-resolution satellite base maps.
@@ -97,6 +125,13 @@ npm run preview
 ```text
 webApp/
   public/
+    Image/
+      AHO_Chart_Explorer.png
+      Bathymetry DEM.png
+      Isobaths_at_5m depth_intervals.png
+      Marine_Protected_Area.png
+      Saatellite Map.png
+      Tide_or_Marine_Prompt.png
     data/
       nsw-lidar-coverage.geojson
       nsw-lidar-catalog.json
