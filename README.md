@@ -120,42 +120,8 @@ dist/
 npm run preview
 ```
 
-## Project Structure
-
-```text
-webApp/
-  public/
-    Image/
-      AHO_Chart_Explorer.png
-      Bathymetry DEM.png
-      Isobaths_at_5m depth_intervals.png
-      Marine_Protected_Area.png
-      Saatellite Map.png
-      Tide_or_Marine_Prompt.png
-    data/
-      nsw-lidar-coverage.geojson
-      nsw-lidar-catalog.json
-  scripts/
-    convert-nsw-lidar.mjs
-  src/
-    components/
-      MarineMap.jsx
-      MarineProtectedAreasLayer.jsx
-      SeedBathymetryLayer.jsx
-      Sidebar.jsx
-    data/
-      australiaStates.js
-      nswLidar.js
-      tides.js
-    App.jsx
-    main.jsx
-    styles.css
-```
-
 ## GitHub Upload Notes
 
-
-```
 
 The original Shapefile directory is large and duplicates the converted GeoJSON used by the app. It is usually better to exclude it:
 
