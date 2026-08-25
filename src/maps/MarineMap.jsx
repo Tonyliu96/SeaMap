@@ -101,7 +101,8 @@ export default function MarineMap({
 
       <AhoDepthLayer
         enabled={bathymetryEnabled && showAhoDepths}
-        opacity={bathymetryOpacity}/>
+        opacity={bathymetryOpacity}
+        selectedState={selectedRegion}/>
 
       <MarineProtectedAreasLayer
         enabled={marineProtectedEnabled}

@@ -139,6 +139,11 @@ body {
     contrast(1.08);
 }
 
+.ausseabed-dem-tile {
+  mix-blend-mode: multiply;
+  filter: saturate(0.82) contrast(0.88) brightness(1.16);
+}
+
 .isobath-label-icon {
   pointer-events: none;
 }
