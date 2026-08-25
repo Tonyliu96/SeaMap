@@ -25,8 +25,9 @@ const dictionaries = {
     "bathymetry.ausSource": "AusSeabed AusBathyTopo Australia 250m 2026",
     "bathymetry.dem": "Bathymetry DEM - metres",
     "bathymetry.isobaths": "Isobaths at 5m depth intervals (NSW only)",
-    "bathymetry.slope": "Slope - degrees (NSW only)",
-    "bathymetry.nonNswNote": "This region uses the AusSeabed national bathymetry raster. The 5m isobath and slope layers are available only from the NSW SEED service.",
+    "bathymetry.ahoDepths": "AHO Chart Explorer depths only",
+    "bathymetry.ahoNote": "Uses AHO ENC Online Data. Not for navigation.",
+    "bathymetry.nonNswNote": "This region uses the AusSeabed national bathymetry raster. The 5m isobath layer is available only from the NSW SEED service. AHO depths are available as chart tiles.",
     "opacity": "Opacity",
     "mpa.show": "Show marine protected areas",
     "mpa.source": "CAPAD 2024 Marine Protected Areas",
@@ -35,6 +36,7 @@ const dictionaries = {
     "mpa.zone": "Zone",
     "mpa.authority": "Authority",
     "mpa.fishing": "Fishing restrictions",
+    "mpa.officialRules": "View official rules",
     "mpa.queryError": "Unable to query this marine protected area.",
     "lidar.show": "Show coverage polygons",
     "lidar.source": "Marine_NSWCoastalLidarCoverage_20190827",
@@ -82,7 +84,9 @@ const dictionaries = {
     "fishing.special": "Special purpose zone: fishing rules depend on the purpose and management plan, and some activities may be restricted.",
     "fishing.aquatic": "Aquatic reserve: collecting, taking fish or invertebrates, or specific fishing methods are often restricted. Check the local rules.",
     "fishing.general": "General use area: fishing may be allowed, but state/federal fishing rules and the protected area management plan still apply.",
-    "fishing.unknown": "This layer does not provide the full legal text for fishing rules. Check the protected area management plan or local fisheries rules."
+    "fishing.unknown": "This layer does not provide the full legal text for fishing rules. Check the protected area management plan or local fisheries rules.",
+    "fishing.aquaticMissing": "Official activity details were not found for this aquatic reserve. Check the NSW aquatic reserve rules.",
+    "fishing.marineParkLink": "Marine park rules vary by zone. Open the official NSW page for detailed restrictions."
   },
   zh: {
     "language.section": "语言",
@@ -108,7 +112,8 @@ const dictionaries = {
     "bathymetry.ausSource": "AusSeabed AusBathyTopo Australia 250m 2026",
     "bathymetry.dem": "Bathymetry DEM - metres",
     "bathymetry.isobaths": "Isobaths at 5m depth intervals（仅 NSW）",
-    "bathymetry.slope": "Slope - degrees（仅 NSW）",
+    "bathymetry.ahoDepths": "AHO Chart Explorer 仅水深数据",
+    "bathymetry.ahoNote": "使用 AHO ENC Online Data。不可用于航海导航。",
     "bathymetry.nonNswNote": "当前州使用 AusSeabed 全国真实水深栅格；5m 等深线和坡度图层仅 NSW SEED 服务提供。",
     "opacity": "透明度",
     "mpa.show": "显示海洋保护区",
@@ -118,6 +123,7 @@ const dictionaries = {
     "mpa.zone": "分区",
     "mpa.authority": "管理机构",
     "mpa.fishing": "钓鱼限制",
+    "mpa.officialRules": "查看官方限制",
     "mpa.queryError": "无法查询这个海洋保护区。",
     "lidar.show": "显示覆盖范围",
     "lidar.source": "Marine_NSWCoastalLidarCoverage_20190827",
@@ -165,7 +171,9 @@ const dictionaries = {
     "fishing.special": "特殊用途区：钓鱼规则取决于该用途和管理计划，可能限制部分活动。",
     "fishing.aquatic": "水生保护区：通常限制采集、鱼类/无脊椎动物捕捞或特定钓鱼方式。",
     "fishing.general": "一般使用区：钓鱼通常可能允许，但仍受渔业规则和保护区管理计划限制。",
-    "fishing.unknown": "该图层未提供完整钓鱼法规文本；请查看保护区管理计划或当地渔业规定。"
+    "fishing.unknown": "该图层未提供完整钓鱼法规文本；请查看保护区管理计划或当地渔业规定。",
+    "fishing.aquaticMissing": "没有在 JSON 中找到这个 aquatic reserve 的官方活动说明，请查看 NSW aquatic reserve 规则。",
+    "fishing.marineParkLink": "Marine Park 的限制会根据 zone 不同而变化，请打开 NSW 官方页面查看详细限制。"
   }
 };
 

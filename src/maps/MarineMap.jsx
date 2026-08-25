@@ -1,26 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  GeoJSON,
-  MapContainer,
-  Pane,
-  TileLayer,
-  ZoomControl,
-  useMapEvents
-} from "react-leaflet";
+import {GeoJSON, MapContainer, Pane, TileLayer, ZoomControl, useMapEvents} from "react-leaflet";
 import L from "leaflet";
+import AhoDepthLayer from "../layers/AhoDepthLayer.jsx";
+import BathymetryDemLayer from "../layers/BathymetryDemLayer.jsx";
 import IsobathLayer from "../layers/IsobathLayer.jsx";
 import MarineProtectedAreasLayer from "../layers/MarineProtectedAreasLayer.jsx";
-import SeedBathymetryLayer from "../layers/SeedBathymetryLayer.jsx";
 import { loadNswLidarCoverage } from "../services/nswLidar.js";
 import { escapeHtml } from "../constants/localization.js";
-import {
-  formatMeters,
-  formatSeconds,
-  formatTideTime,
-  formatWindDirection,
-  formatWindSpeed,
-  groupThreeDayTideEvents
-} from "../services/tides.js";
+import {formatMeters, formatSeconds, formatTideTime, formatWindDirection, formatWindSpeed, groupThreeDayTideEvents} from "../services/tides.js";
 
 const baseLayers = {
   streets: {
@@ -43,7 +30,7 @@ export default function MarineMap({
   bathymetryEnabled,
   showBathymetryDem,
   showIsobaths,
-  showSlope,
+  showAhoDepths,
   bathymetryOpacity,
   marineProtectedEnabled,
   marineProtectedOpacity,
@@ -92,8 +79,7 @@ export default function MarineMap({
       doubleClickZoom
       touchZoom
       zoomControl={false}
-      className="h-full w-full"
-    >
+      className="h-full w-full">
       <ZoomControl position="topright" />
 
       <TileLayer
@@ -101,28 +87,26 @@ export default function MarineMap({
         url={activeBase.url}
         attribution={activeBase.attribution}
         maxNativeZoom={activeBase.maxNativeZoom}
-        maxZoom={28}
-      />
+        maxZoom={28}/>
 
-      <SeedBathymetryLayer
-        enabled={bathymetryEnabled}
-        showDem={showBathymetryDem}
-        showSlope={showSlope}
+      <BathymetryDemLayer
+        enabled={bathymetryEnabled && showBathymetryDem}
         opacity={bathymetryOpacity}
-        selectedState={selectedRegion}
-      />
+        selectedState={selectedRegion}/>
 
       <IsobathLayer
         enabled={bathymetryEnabled && showIsobaths && selectedRegion === "NSW"}
-        opacity={bathymetryOpacity}
-      />
+        opacity={bathymetryOpacity}/>
+
+      <AhoDepthLayer
+        enabled={bathymetryEnabled && showAhoDepths}
+        opacity={bathymetryOpacity}/>
 
       <MarineProtectedAreasLayer
         enabled={marineProtectedEnabled}
         selectedState={selectedRegion}
         opacity={marineProtectedOpacity}
-        t={t}
-      />
+        t={t}/>
 
       <Pane name="nsw-lidar-coverage" style={{ zIndex: 440 }}>
         {lidarEnabled && lidarCoverage && (
@@ -131,8 +115,7 @@ export default function MarineMap({
               key="nsw-lidar-coverage"
               data={lidarCoverage}
               style={(feature) => lidarStyle(feature)}
-              interactive={false}
-            />
+              interactive={false}/>
           </>
         )}
       </Pane>
@@ -142,16 +125,13 @@ export default function MarineMap({
       <SelectedTidePopup
         selectedTideInfo={selectedTideInfo}
         setSelectedTideInfo={setSelectedTideInfo}
-        t={t}
-      />
+        t={t}/>
 
       <div className="absolute bottom-4 right-4 z-[650] rounded-lg border border-white/15 bg-slate-900/80 px-3 py-2 text-xs text-slate-100 shadow-marine backdrop-blur-md">
         <div>{t("telemetry.lat")} {cursor.lat.toFixed(5)}</div>
         <div>{t("telemetry.lng")} {cursor.lng.toFixed(5)}</div>
         <div>{t("telemetry.zoom")} {cursor.zoom}</div>
-        <div>
-          {t("telemetry.lidar")}{" "}
-          {lidarStatus === "ready"
+        <div>{t("telemetry.lidar")}{" "}{lidarStatus === "ready"
             ? `${lidarCoverage?.features?.length ?? 0} ${t("telemetry.polygons")}`
             : lidarStatus}
         </div>
@@ -224,9 +204,7 @@ function renderTidePopup(selectedTideInfo, t) {
         <p class="text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">${escapeHtml(t("section.tide"))}</p>
         <p class="mt-2 text-sm">${escapeHtml(t("tide.errorLocation"))}</p>
         <p class="mt-1 text-xs text-slate-500">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
-      </div>
-    `;
-  }
+      </div>`;}
 
   const info = selectedTideInfo.info;
   const groups = groupThreeDayTideEvents(info);
@@ -242,14 +220,9 @@ function renderTidePopup(selectedTideInfo, t) {
                   <span>${escapeHtml(event.kind === "high" ? t("tide.high") : t("tide.low"))}</span>
                   <span>${formatTideTime(event.time)}</span>
                   <strong>${formatMeters(event.height, t)}</strong>
-                </div>
-              `
-            )
-            .join("")}
-        </div>
-      `
-    )
-    .join("");
+                </div>`
+            ).join("")}
+        </div>`).join("");
 
   return `
     <div class="min-w-64 max-h-[500px] space-y-2 overflow-y-auto pr-1 text-slate-900 [scrollbar-color:rgba(2,132,199,0.6)_rgba(226,232,240,0.8)] [scrollbar-width:thin]">
@@ -272,8 +245,7 @@ function renderTidePopup(selectedTideInfo, t) {
         <span>${escapeHtml(t("tide.windDirection"))}</span><strong>${formatWindDirection(info.windDirection, t)}</strong>
       </div>
       <p class="text-[11px] leading-4 text-slate-500">${escapeHtml(t("tide.popupNote"))}</p>
-    </div>
-  `;
+    </div>`;
 }
 
 function lidarStyle(feature) {

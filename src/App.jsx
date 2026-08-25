@@ -16,7 +16,7 @@ export default function App() {
   const [bathymetryEnabled, setBathymetryEnabled] = useState(true);
   const [showBathymetryDem, setShowBathymetryDem] = useState(false);
   const [showIsobaths, setShowIsobaths] = useState(true);
-  const [showSlope, setShowSlope] = useState(false);
+  const [showAhoDepths, setShowAhoDepths] = useState(false);
   const [bathymetryOpacity, setBathymetryOpacity] = useState(68);
   const [marineProtectedEnabled, setMarineProtectedEnabled] = useState(true);
   const [marineProtectedOpacity, setMarineProtectedOpacity] = useState(58);
@@ -45,7 +45,7 @@ export default function App() {
       bathymetryEnabled,
       showBathymetryDem,
       showIsobaths,
-      showSlope,
+      showAhoDepths,
       bathymetryOpacity: bathymetryOpacity / 100,
       marineProtectedEnabled,
       marineProtectedOpacity: marineProtectedOpacity / 100,
@@ -57,7 +57,7 @@ export default function App() {
       bathymetryEnabled,
       showBathymetryDem,
       showIsobaths,
-      showSlope,
+      showAhoDepths,
       bathymetryOpacity,
       marineProtectedEnabled,
       marineProtectedOpacity,
@@ -102,10 +102,7 @@ export default function App() {
         selectedTideInfo={selectedTideInfo}
         setSelectedTideInfo={setSelectedTideInfo}
         onTidePointQuery={queryPointTide}
-        t={t}
-      />
-
-      
+        t={t}/>
 
       <Sidebar
         language={language}
@@ -123,8 +120,8 @@ export default function App() {
         setShowBathymetryDem={setShowBathymetryDem}
         showIsobaths={showIsobaths}
         setShowIsobaths={setShowIsobaths}
-        showSlope={showSlope}
-        setShowSlope={setShowSlope}
+        showAhoDepths={showAhoDepths}
+        setShowAhoDepths={setShowAhoDepths}
         bathymetryOpacity={bathymetryOpacity}
         setBathymetryOpacity={setBathymetryOpacity}
         marineProtectedEnabled={marineProtectedEnabled}
@@ -137,8 +134,7 @@ export default function App() {
         tideStatus={tideStatus}
         tideError={tideError}
         tideCoordinate={tideCoordinate}
-        onRefreshTide={refreshTide}
-      />
+        onRefreshTide={refreshTide}/>
     </main>
   );
 }

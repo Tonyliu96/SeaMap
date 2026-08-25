@@ -116,8 +116,7 @@ export default function IsobathLayer({ enabled, opacity }) {
             lineCap: "round",
             lineJoin: "round"
           };
-        }}
-      />
+        }}/>
       {labels.map((label) => (
         <Marker
           key={label.id}
@@ -128,8 +127,7 @@ export default function IsobathLayer({ enabled, opacity }) {
             html: `<span style="color:${getIsobathColor(label.contour)}">${Math.round(label.contour)}</span>`,
             iconSize: [34, 18],
             iconAnchor: [17, 9]
-          })}
-        />
+          })}/>
       ))}
     </Pane>
   );

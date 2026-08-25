@@ -1,0 +1,157 @@
+{
+  "_meta": {
+    "description": "NSW 12 Aquatic Reserves - location and 'what can I do' rules, manually compiled from NSW DPIRD official pages under https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves",
+    "compiledDate": "2026-08-25",
+    "disclaimer": "For reference/display purposes only. Rules can change — always link back to sourceUrl and encourage users to verify with the official page or FishSmart app before fishing.",
+    "note": "Page structures on dpird.nsw.gov.au are not uniform. Some reserves (e.g. North Harbour, Barrenjoey Head) use a legacy single-page layout with a clear 'What can I do' heading. Others (e.g. Cook Island, Long Reef) have been redesigned into multiple sub-pages, so text below was consolidated from the main page + relevant sub-page."
+  },
+  "aquaticReserves": [
+    {
+      "id": "cook-island",
+      "name": "Cook Island Aquatic Reserve",
+      "capadNameHint": "Cook Island Aquatic Reserve",
+      "established": 1998,
+      "areaHectares": 78,
+      "region": "North Coast / Tweed Heads",
+      "location": "Approximately 600 m offshore from Fingal Head and 4 km south-east of Tweed Heads in northern NSW.",
+      "whatCanIDo": "The reserve is split into two zones. The inner zone around the island is a no-take sanctuary zone — no collecting, touching, chasing or disturbing any marine life (alive or dead). The outer zone allows some fishing, subject to standard NSW fishing rules. Public moorings are provided; vessels have a 3-hour limit and must not exceed 15 m in winds under 21 knots.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/cook-island-aquatic-reserve",
+      "detailUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/cook-island-aquatic-reserve/respecting-the-reserve",
+      "pageStructure": "redesigned-multi-page"
+    },
+    {
+      "id": "barrenjoey-head",
+      "name": "Barrenjoey Head Aquatic Reserve",
+      "capadNameHint": "Barrenjoey Head Aquatic Reserve",
+      "established": 2002,
+      "areaHectares": 30,
+      "region": "Northern Sydney / Palm Beach",
+      "location": "The rocky shore around Barrenjoey Head, from the northern end of Palm Beach around the headland to the northern end of Station Beach, out to 100 m offshore.",
+      "whatCanIDo": "You can line fish, spearfish, and collect blacklip abalone, eastern/southern rock lobster, sea lettuce and bait weed, subject to standard NSW fishing rules. It is prohibited to collect cunjevoi or any other marine invertebrate (e.g. anemones, barnacles, chitons, cockles, crabs, mussels, octopus, pipis, sea urchins, starfish, snails, worms) whether dead or alive, and empty shells cannot be collected.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/barrenjoey-head-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "narrabeen-head",
+      "name": "Narrabeen Head Aquatic Reserve",
+      "capadNameHint": "Narrabeen Head Aquatic Reserve",
+      "established": 2002,
+      "areaHectares": 10,
+      "region": "Northern Sydney / Narrabeen",
+      "location": "The rocky shore between the southern end of Turimetta Beach and the rock baths at Narrabeen Head, extending 100 m offshore.",
+      "whatCanIDo": "You can line fish, spearfish, and collect blacklip abalone, eastern/southern rock lobster, sea lettuce and bait weed, subject to standard NSW fishing rules. It is prohibited to collect cunjevoi or any other marine invertebrate (anemones, barnacles, chitons, cockles, crabs, mussels, octopus, oysters, pipis, sea urchins, starfish, snails, worms), whether dead or alive. Empty shells cannot be collected, and marine vegetation cannot be collected except sea lettuce and bait weed.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/narrabeen-head-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "long-reef",
+      "name": "Long Reef Aquatic Reserve",
+      "capadNameHint": "Long Reef Aquatic Reserve",
+      "established": 1980,
+      "areaHectares": 80,
+      "region": "Northern Sydney / Collaroy",
+      "location": "The oldest aquatic reserve in NSW. Extends along the shore from Collaroy rock baths south to Long Reef Surf Life Saving Club, out to 100 m offshore.",
+      "whatCanIDo": "You can fish for finfish by hand-held line or spear only (subject to NSW fishing rules), and swim, snorkel, dive, surf and boat. No invertebrate animals or marine plants (alive or dead) can be taken, collected or interfered with — this rules out squid/cuttlefish fishing, bait collection, and taking shellfish or empty shells. Turning over rocks or moving animals/plants is also not allowed.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/long-reef-aquatic-reserve",
+      "detailUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/long-reef-aquatic-reserve/visiting-the-reserve",
+      "pageStructure": "redesigned-multi-page"
+    },
+    {
+      "id": "cabbage-tree-bay",
+      "name": "Cabbage Tree Bay Aquatic Reserve",
+      "capadNameHint": "Cabbage Tree Bay Aquatic Reserve",
+      "established": 2002,
+      "areaHectares": 20,
+      "region": "Northern Sydney / Manly",
+      "location": "The entire bay, rocky shores and beaches from the southern end of Manly Beach to the northern end of Shelly Beach Headland.",
+      "whatCanIDo": "This is a full no-take reserve. Fishing by any method is prohibited, and you cannot harm, collect or interfere with any marine animal or plant, alive or dead (including empty shells). It is one of Sydney's most popular snorkelling, diving and underwater-photography spots. Dogs are prohibited on the beach and in the reserve at all times.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/cabbage-tree-bay-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "north-harbour",
+      "name": "North Harbour Aquatic Reserve",
+      "capadNameHint": "North Harbour Aquatic Reserve",
+      "established": 1982,
+      "areaHectares": 260,
+      "region": "Northern Sydney / Manly",
+      "location": "Between North Head and Dobroyd Head in the northern part of Sydney Harbour.",
+      "whatCanIDo": "You can enjoy snorkelling, scuba diving, swimming, boating and line fishing for finfish only, subject to standard NSW fishing rules. Spearfishing is prohibited. No invertebrate animals, cunjevoi or marine plants (alive or dead) can be taken or collected — this rules out shellfish, squid/cuttlefish, worm pumping and empty shells. Avoid anchoring in seagrass beds.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/north-harbour-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "bronte-coogee",
+      "name": "Bronte-Coogee Aquatic Reserve",
+      "capadNameHint": "Bronte-Coogee Aquatic Reserve",
+      "established": 2002,
+      "areaHectares": 40,
+      "region": "Eastern Sydney",
+      "location": "From the southern end of Bronte Beach to the rock baths at Coogee Beach, out to 100 m offshore (includes Gordons Bay and Clovelly Bay).",
+      "whatCanIDo": "You can line fish anywhere in the reserve. Spearfishing is allowed, but not in Clovelly Bay, Gordons Bay and surrounding waters (protects the local blue groper population — taking blue groper by any method is banned NSW-wide). You can collect blacklip abalone, eastern/southern rock lobster, sea lettuce and bait weed. All other invertebrates and cunjevoi are prohibited (dead or alive), including empty shells.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/bronte-coogee-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "cape-banks",
+      "name": "Cape Banks Aquatic Reserve",
+      "capadNameHint": "Cape Banks Aquatic Reserve",
+      "established": 2002,
+      "areaHectares": 20,
+      "region": "Eastern Sydney / La Perouse",
+      "location": "The northern headland of Botany Bay, from the bridge at Cape Banks to the Endeavour Light at Henry Head, 100 m seaward.",
+      "whatCanIDo": "Line fishing and spearfishing are permitted, but bait cannot be collected from the reserve. You can collect rock lobster, abalone, sea lettuce and bait weed. Collecting cunjevoi or any other marine invertebrate is prohibited.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/cape-banks-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "boat-harbour",
+      "name": "Boat Harbour Aquatic Reserve",
+      "capadNameHint": "Boat Harbour Aquatic Reserve",
+      "established": 1982,
+      "areaHectares": 70,
+      "region": "Southern Sydney / Kurnell",
+      "location": "The southern part of the Kurnell Peninsula, including Merries Reef, extending east to Potter Point, 100 m seaward.",
+      "whatCanIDo": "Line fishing and spearfishing are allowed, subject to standard NSW fishing rules. You can also collect abalone, rock lobster, sea lettuce and bait weed. Collecting cunjevoi or any other marine invertebrate is prohibited.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/boat-harbour-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "towra-point",
+      "name": "Towra Point Aquatic Reserve",
+      "capadNameHint": "Towra Point Aquatic Reserve",
+      "established": 1987,
+      "areaHectares": 140,
+      "region": "Southern Sydney / Botany Bay",
+      "location": "The southern shore of Botany Bay, from the southern point of Woolooware Bay to the eastern point of Quibray Bay. Adjoins the Towra Point Nature Reserve, a Ramsar-listed wetland of international importance.",
+      "whatCanIDo": "The reserve is split into two zones. In the sanctuary zone, you can observe marine life but fishing and collecting invertebrates or marine vegetation (alive or dead) is prohibited. In the refuge zone, you can take fish and invertebrates by hook-and-line or lawful recreational nets (e.g. hoop nets, lift nets), subject to standard NSW fishing rules — all other fishing/collecting methods and interfering with marine vegetation are prohibited.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/towra-point-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    },
+    {
+      "id": "shiprock",
+      "name": "Shiprock Aquatic Reserve",
+      "capadNameHint": "Shiprock Aquatic Reserve",
+      "established": 1982,
+      "areaHectares": 2,
+      "region": "Southern Sydney / Port Hacking",
+      "location": "The western headland of Burraneer Bay, off Little Turriel Point in Port Hacking, southern Sydney.",
+      "whatCanIDo": "This is a full no-take reserve — all fishing and collecting is prohibited, and all fish life is protected. It's a popular shore dive and night-dive site known for its diversity of invertebrates and reef fish.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/shiprock-aquatic-reserve",
+      "pageStructure": "legacy-single-page",
+      "confidence": "corroborated-from-secondary-sources"
+    },
+    {
+      "id": "bushrangers-bay",
+      "name": "Bushrangers Bay Aquatic Reserve",
+      "capadNameHint": "Bushrangers Bay Aquatic Reserve",
+      "established": 1982,
+      "areaHectares": 4,
+      "region": "Shellharbour / Bass Point",
+      "location": "The entirety of Bushrangers Bay, a small rocky embayment at the eastern end of Bass Point, about 4 km south of Shellharbour on the NSW south coast.",
+      "whatCanIDo": "This is a full no-take reserve. You're not permitted to fish by any method, harm marine animals or plants, or collect marine organisms whether dead or alive (including empty shells). Divers and snorkellers are asked not to touch the soft corals as they break off easily.",
+      "sourceUrl": "https://www.dpird.nsw.gov.au/fishing/marine-protected-areas/aquatic-reserves/bushrangers-bay-aquatic-reserve",
+      "pageStructure": "legacy-single-page"
+    }
+  ]
+}
