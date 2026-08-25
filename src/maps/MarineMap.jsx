@@ -18,7 +18,7 @@ const baseLayers = {
   },
   satellite: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    maxNativeZoom: 19,
+    maxNativeZoom: 18,
     attribution:
       "Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community"
   }
