@@ -5,6 +5,7 @@ import AhoDepthLayer from "../layers/AhoDepthLayer.jsx";
 import BathymetryDemLayer from "../layers/BathymetryDemLayer.jsx";
 import IsobathLayer from "../layers/IsobathLayer.jsx";
 import MarineProtectedAreasLayer from "../layers/MarineProtectedAreasLayer.jsx";
+import MhlWaveBuoyLayer from "../layers/MhlWaveBuoyLayer.jsx";
 import { loadNswLidarCoverage } from "../services/nswLidar.js";
 import { escapeHtml } from "../constants/localization.js";
 import {formatMeters, formatSeconds, formatTideTime, formatWindDirection, formatWindSpeed, groupThreeDayTideEvents} from "../services/tides.js";
@@ -35,6 +36,8 @@ export default function MarineMap({
   marineProtectedEnabled,
   marineProtectedOpacity,
   selectedRegion,
+  selectedMhlBuoy,
+  setSelectedMhlBuoy,
   selectedTideInfo,
   setSelectedTideInfo,
   onTidePointQuery,
@@ -108,6 +111,12 @@ export default function MarineMap({
         enabled={marineProtectedEnabled}
         selectedState={selectedRegion}
         opacity={marineProtectedOpacity}
+        t={t}/>
+
+      <MhlWaveBuoyLayer
+        enabled={selectedRegion === "NSW"}
+        selectedBuoy={selectedMhlBuoy}
+        onSelectBuoy={setSelectedMhlBuoy}
         t={t}/>
 
       <Pane name="nsw-lidar-coverage" style={{ zIndex: 440 }}>
@@ -293,9 +302,18 @@ function renderTidePopup(selectedTideInfo, t) {
         <span>${escapeHtml(t("tide.seaLevel"))}</span><strong>${formatMeters(info.currentSeaLevel, t)}</strong>
         <span>${escapeHtml(t("tide.waveHeight"))}</span><strong>${formatMeters(info.waveHeight, t)}</strong>
         <span>${escapeHtml(t("tide.wavePeriod"))}</span><strong>${formatSeconds(info.wavePeriod, t)}</strong>
+        <span>${escapeHtml(t("tide.waveSource"))}</span><strong>${escapeHtml(info.waveSource ?? t("notAvailable"))}</strong>
         <span>${escapeHtml(t("tide.windSpeed"))}</span><strong>${formatWindSpeed(info.windSpeed, t)}</strong>
         <span>${escapeHtml(t("tide.windDirection"))}</span><strong>${formatWindDirection(info.windDirection, t)}</strong>
       </div>
+      ${info.wavePoint ? `
+        <p class="rounded-md border border-cyan-100 bg-cyan-50 px-2 py-1 text-[11px] leading-4 text-cyan-900">
+          ${escapeHtml(t("tide.nearshorePoint", {
+            name: info.wavePoint.name ?? info.wavePoint.sitecode,
+            id: info.wavePoint.sitecode ?? info.wavePoint.id,
+            distance: info.wavePointDistanceKm?.toFixed(1) ?? t("notAvailable")
+          }))}
+        </p>` : ""}
       <p class="text-[11px] leading-4 text-slate-500">${escapeHtml(t("tide.popupNote"))}</p>
     </div>`;
 }

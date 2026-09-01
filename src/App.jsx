@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "./components/Sidebar.jsx";
+import MhlBuoyForecastPanel from "./components/MhlBuoyForecastPanel.jsx";
 import MarineMap from "./maps/MarineMap.jsx";
 import { fetchTideInfo } from "./services/tides.js";
 import {
@@ -25,6 +26,7 @@ export default function App() {
   const [selectedTideInfo, setSelectedTideInfo] = useState(null);
   const [tideStatus, setTideStatus] = useState("idle");
   const [tideError, setTideError] = useState("");
+  const [selectedMhlBuoy, setSelectedMhlBuoy] = useState(null);
   const [tideCoordinate, setTideCoordinate] = useState({
     lat: -33.8688,
     lng: 151.2093,
@@ -95,14 +97,27 @@ export default function App() {
     refreshTide(tideCoordinate);
   }, []);
 
+  useEffect(() => {
+    if (selectedRegion !== "NSW") setSelectedMhlBuoy(null);
+  }, [selectedRegion]);
+
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-slate-950 text-white">
       <MarineMap
         {...mapState}
+        selectedMhlBuoy={selectedMhlBuoy}
+        setSelectedMhlBuoy={setSelectedMhlBuoy}
         selectedTideInfo={selectedTideInfo}
         setSelectedTideInfo={setSelectedTideInfo}
         onTidePointQuery={queryPointTide}
         t={t}/>
+
+      {selectedRegion === "NSW" && (
+        <MhlBuoyForecastPanel
+          buoy={selectedMhlBuoy}
+          onClose={() => setSelectedMhlBuoy(null)}
+          t={t}/>
+      )}
 
       <Sidebar
         language={language}

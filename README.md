@@ -30,6 +30,11 @@ Vercel website address: https://sea-map.vercel.app/
 
 ![Satellite Map](public/Image/Saatellite%20Map.png)
 
+### NSW Coastal and Marine Environmental
+
+![NSW Coastal and Marine Environmental](public/Image/NSW_Coastal&Marine.png)
+
+
 ## Features
 
 - Street / terrain and high-resolution satellite base maps.
@@ -73,8 +78,15 @@ This project uses public data and map services:
 - CAPAD Marine Protected Areas service
 - Open-Meteo Marine Weather API
 - Open-Meteo Weather Forecast API
+- Manly Hydraulics Laboratory NSW Ocean Wave Data Collection Program for latest NSW wave buoy observations
 
 Tide values are modelled and may be inaccurate nearshore or inside harbours. They are provided for visual context only and must not be used for navigation or safety-critical decisions.
+
+## NSW Wave Buoys
+
+The app uses the MHL public API for the latest NSW ocean wave buoy observations where a selected location is close to a buoy. The default buoy set matches the MHL Ocean Wave page: Byron Bay, Coffs Harbour, Crowdy Head, Sydney, Port Kembla, Batemans Bay, and Eden.
+
+When MHL observations are unavailable or the selected location is too far from a buoy, the app falls back to Open-Meteo marine wave values.
 
 ## Install
 
@@ -131,12 +143,6 @@ Marine_NSWCoastalLidarCoverage_20190827/
 
 The app currently uses `public/data/nsw-lidar-coverage.geojson`, which is about 27 MB. This can be committed if you want the app to run fully from the repository, but it will make the repo larger.
 
-## Privacy
-
-The app does not require API keys. Tide and marine condition queries send the selected map coordinate to Open-Meteo in order to retrieve modelled marine conditions.
-
-The app does not automatically send browser GPS location. If a future location button is added, it should request browser permission before sending coordinates to any external service.
-
 ## Attribution
 
-Keep map and data attribution visible when deploying the app. Review the terms of use for OpenStreetMap, Esri, NSW SEED, AusSeabed, CAPAD, and Open-Meteo before public production deployment.
+Keep map and data attribution visible when deploying the app. Review the terms of use for OpenStreetMap, Esri, NSW SEED, AusSeabed, CAPAD, Open-Meteo, and MHL before public production deployment.

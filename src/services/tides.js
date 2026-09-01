@@ -1,12 +1,15 @@
+import { fetchMhlWaveInfo } from "./mhlWaves.js";
+
 const MARINE_API = "https://marine-api.open-meteo.com/v1/marine";
 const FORECAST_API = "https://api.open-meteo.com/v1/forecast";
 const TIMEZONE = "Australia/Sydney";
 const DUPLICATE_EVENT_WINDOW_MS = 3 * 60 * 60 * 1000;
 
 export async function fetchTideInfo({ lat, lng }) {
-  const [marine, wind] = await Promise.all([
+  const [marine, wind, mhlWaves] = await Promise.all([
     fetchMarine(lat, lng),
-    fetchWind(lat, lng)
+    fetchWind(lat, lng),
+    fetchMhlWaveInfo({ lat, lng }).catch(() => null)
   ]);
 
   const events = mergeNearbyDuplicateEvents(
@@ -20,8 +23,13 @@ export async function fetchTideInfo({ lat, lng }) {
     nextHigh: events.find((event) => event.kind === "high" && event.time >= now) ?? null,
     nextLow: events.find((event) => event.kind === "low" && event.time >= now) ?? null,
     tideEvents: events,
-    waveHeight: marine.current?.wave_height ?? null,
-    wavePeriod: marine.current?.wave_period ?? null,
+    waveHeight: mhlWaves?.waveHeight ?? marine.current?.wave_height ?? null,
+    wavePeriod: mhlWaves?.wavePeriod ?? marine.current?.wave_period ?? null,
+    waveDirection: mhlWaves?.waveDirection ?? null,
+    waveSource: mhlWaves?.source ?? "Open-Meteo Marine",
+    wavePoint: mhlWaves?.buoy ?? null,
+    wavePointDistanceKm: mhlWaves?.distanceKm ?? null,
+    waveObservedAt: mhlWaves?.observedAt ?? null,
     windSpeed: wind.current?.wind_speed_10m ?? null,
     windDirection: wind.current?.wind_direction_10m ?? null,
     updatedAt: now

@@ -1,52 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState,useCallback } from "react";
 import { GeoJSON, Marker, Pane, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import {
-  fetchIsobaths,
-  getContourValue,
-  getFeatureLabelCoordinate,
-  getIsobathColor,
-  getIsobathWeight
-} from "../constants/isobaths.js";
+import {fetchIsobaths, getContourValue, getFeatureLabelCoordinate, getIsobathColor, getIsobathWeight} from "../constants/isobaths.js";
 
 const MIN_ISOBATH_ZOOM = 11;
 
 export default function IsobathLayer({ enabled, opacity }) {
   const map = useMap();
   const [features, setFeatures] = useState(null);
+
+  const geoJsonRef = useRef(null);
   const queryKeyRef = useRef("");
   const abortRef = useRef(null);
   const timeoutRef = useRef(null);
 
-  useMapEvents({
-    moveend() {
-      loadVisibleIsobaths();
-    },
-    zoomend() {
-      loadVisibleIsobaths();
+  const cancelPendingRequest = useCallback(() => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-  });
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, []);
 
-  useEffect(() => {
-    if (!enabled) {
-      cancelPendingRequest();
-      setFeatures(null);
-      queryKeyRef.current = "";
-      return undefined;
-    }
-
-    loadVisibleIsobaths();
-    return cancelPendingRequest;
-  }, [enabled, map]);
-
-  function loadVisibleIsobaths() {
+  const loadVisibleIsobaths = useCallback(() => {
     if (!enabled || map.getZoom() < MIN_ISOBATH_ZOOM) {
       cancelPendingRequest();
       setFeatures(null);
       queryKeyRef.current = "";
       return;
     }
-
     const bounds = map.getBounds();
     const queryKey = [
       map.getZoom(),
@@ -71,43 +54,70 @@ export default function IsobathLayer({ enabled, opacity }) {
         if (error.name !== "AbortError") setFeatures(null);
       }
     }, 250);
-  }
+  },[enabled,map,cancelPendingRequest]);
 
-  function cancelPendingRequest() {
-    if (timeoutRef.current) {
-      window.clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
+  useMapEvents({
+    moveend: loadVisibleIsobaths,
+    zoomend: loadVisibleIsobaths
+  });
+
+  useEffect(() => {
+    if (!enabled) {
+      cancelPendingRequest();
+      setFeatures(null);
+      queryKeyRef.current = "";
+      return;
     }
-    abortRef.current?.abort();
-    abortRef.current = null;
-  }
 
-  const labels = useMemo(
-    () =>
-      (features?.features ?? [])
+    loadVisibleIsobaths();
+    return cancelPendingRequest;
+  }, [enabled, loadVisibleIsobaths,cancelPendingRequest]);
+
+
+  useEffect(() => {
+    if (geoJsonRef.current) {
+      geoJsonRef.current.setStyle((feature) => {
+        const contour = getContourValue(feature);
+        return {
+          color: getIsobathColor(contour),
+          weight: getIsobathWeight(contour),
+          opacity,
+          lineCap: "round",
+          lineJoin: "round"
+        };
+      });
+    }
+  }, [opacity]);
+
+
+  const labels = useMemo(() => {
+    if (!features?.features) return [];
+
+    return features.features
         .map((feature, index) => {
           const contour = getContourValue(feature);
           const coordinate = getFeatureLabelCoordinate(feature);
           if (!coordinate) return null;
+
           return {
             id: `${index}-${contour}-${coordinate.join(",")}`,
             contour,
-            coordinate
+            coordinate,
+            icon: L.divIcon({
+              className: "isobath-label-icon",
+              html: `<span style="color:${getIsobathColor(contour)}; font-weight:600; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">${Math.round(contour)}</span>`,
+              iconSize: [34, 18],
+              iconAnchor: [17, 9]
+            })
           };
-        })
-        .filter(Boolean),
-    [features]
-  );
+        }).filter(Boolean);
+  }, [features]);
 
   if (!enabled || !features) return null;
 
   return (
     <Pane name="isobath-vector-overlay" style={{ zIndex: 438 }}>
-      <GeoJSON
-        key={queryKeyRef.current}
-        data={features}
-        interactive={false}
-        style={(feature) => {
+      <GeoJSON ref={geoJsonRef} key={queryKeyRef.current} data={features} interactive={false} style={(feature) => {
           const contour = getContourValue(feature);
           return {
             color: getIsobathColor(contour),
@@ -122,12 +132,7 @@ export default function IsobathLayer({ enabled, opacity }) {
           key={label.id}
           position={label.coordinate}
           interactive={false}
-          icon={L.divIcon({
-            className: "isobath-label-icon",
-            html: `<span style="color:${getIsobathColor(label.contour)}">${Math.round(label.contour)}</span>`,
-            iconSize: [34, 18],
-            iconAnchor: [17, 9]
-          })}/>
+          icon={label.icon}/>
       ))}
     </Pane>
   );

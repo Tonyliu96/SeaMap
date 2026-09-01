@@ -3,7 +3,7 @@ import { dynamicMapLayer } from "esri-leaflet";
 import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { escapeHtml } from "../constants/localization.js";
-import nswAquaticReserves from "../../public/data/Nsw_aquatic_reserves.json";
+import nswAquaticReserves from "../data/Nsw_aquatic_reserves.json";
 
 const CAPAD_SERVICE =
   "https://gis.environment.gov.au/gispubmap/rest/services/ogc_services/CAPAD/MapServer";

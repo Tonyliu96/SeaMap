@@ -175,6 +175,204 @@ body {
   margin: 12px 14px;
 }
 
+.mhl-buoy-icon {
+  border: 0;
+  background: transparent;
+}
+
+.mhl-buoy-button {
+  display: grid;
+  position: relative;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  border: 1px solid rgb(125 211 252 / 0.72);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 45%, rgb(8 47 73 / 0.88), rgb(15 23 42 / 0.84)),
+    linear-gradient(135deg, rgb(6 182 212 / 0.5), rgb(34 197 94 / 0.24));
+  color: #ecfeff;
+  cursor: pointer;
+  box-shadow:
+    0 14px 34px rgb(2 6 23 / 0.34),
+    0 0 0 6px rgb(34 211 238 / 0.12);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.mhl-buoy-button:hover,
+.mhl-buoy-button.is-selected {
+  transform: scale(1.08);
+  border-color: rgb(250 204 21 / 0.95);
+  box-shadow:
+    0 18px 48px rgb(2 6 23 / 0.42),
+    0 0 0 7px rgb(250 204 21 / 0.16);
+}
+
+.mhl-buoy-arrow {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgb(14 165 233 / 0.28);
+  color: #fde68a;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgb(2 6 23 / 0.7);
+}
+
+.mhl-buoy-code {
+  position: absolute;
+  top: 8px;
+  width: 100%;
+  overflow: hidden;
+  padding: 0 8px;
+  color: rgb(207 250 254 / 0.92);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mhl-buoy-height {
+  position: absolute;
+  bottom: 7px;
+  border-radius: 4px;
+  background: rgb(2 6 23 / 0.56);
+  padding: 1px 5px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.mhl-wind-particles {
+  position: absolute;
+  z-index: 455;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.mhl-forecast-grid {
+  display: grid;
+  align-items: stretch;
+  color: #e2e8f0;
+  font-size: 10px;
+}
+
+.mhl-forecast-grid > * {
+  min-height: 28px;
+  border-right: 1px solid rgb(255 255 255 / 0.08);
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.mhl-grid-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  padding: 0 8px;
+  color: #a5f3fc;
+  font-weight: 700;
+  text-align: right;
+}
+
+.mhl-time-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgb(8 47 73 / 0.82);
+  color: #bae6fd;
+  font-weight: 800;
+}
+
+.mhl-day-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: linear-gradient(180deg, rgb(14 116 144 / 0.92), rgb(8 47 73 / 0.94));
+  min-width: 0;
+  padding: 0 8px;
+  color: #ecfeff;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.mhl-day-group {
+  justify-content: flex-start;
+  border-right-color: rgb(125 211 252 / 0.32);
+  box-shadow: inset 0 -1px 0 rgb(125 211 252 / 0.16);
+}
+
+.mhl-time-cell small {
+  margin-top: 1px;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.mhl-arrow-cell {
+  display: grid;
+  place-items: center;
+  background: rgb(224 242 254 / 0.08);
+  color: #a7f3d0;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.mhl-arrow-cell.is-wave {
+  background: rgb(14 165 233 / 0.22);
+  color: #fde68a;
+}
+
+.mhl-arrow-cell span {
+  display: inline-block;
+  line-height: 1;
+}
+
+.mhl-wind-cell,
+.mhl-temp-cell,
+.mhl-tide-cell,
+.mhl-wave-cell {
+  display: grid;
+  place-items: center;
+  color: #0f172a;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.mhl-wind-cell {
+  background: linear-gradient(180deg, #a7f3d0, #34d399);
+}
+
+.mhl-temp-cell {
+  background: linear-gradient(180deg, #fde68a, #f59e0b);
+}
+
+.mhl-tide-cell {
+  background: linear-gradient(180deg, #bfdbfe, #60a5fa);
+}
+
+.mhl-wave-cell {
+  grid-template-rows: 1fr 1fr;
+  background: linear-gradient(180deg, #0284c7, #1d4ed8);
+  color: #eff6ff;
+}
+
+.mhl-wave-cell small {
+  color: #dbeafe;
+  font-size: 9px;
+  font-weight: 800;
+}
+
 
 /* .shadow-marine {
   box-shadow: 0 20px 60px -15px rgba(2, 6, 23, 0.5), 0 0 20px 0 rgba(14, 165, 233, 0.15);

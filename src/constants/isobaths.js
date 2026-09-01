@@ -1,31 +1,50 @@
 const SEED_ISOBATH_QUERY_URL =
   "https://mapprod2.environment.nsw.gov.au/arcgis/rest/services/Coastal_Marine/NSW_Marine_Lidar_Bathymetry_Data_2018/MapServer/0/query";
 
+
+const COLOR_MAP = {
+  0: "#ffee58",
+  "-5": "#78ff69",
+  "-10": "#00e5ff",
+  "-15": "#29b6f6",
+  "-20": "#448aff",
+  "-25": "#7c4dff",
+  "-30": "#ff4081",
+  "-35": "#ff7043",
+  "-40": "#ffc107",
+  "-45": "#00ffaa"
+};
+
+// export function getIsobathColor(contour) {
+//   switch (Math.round(Number(contour))) {
+//     case 0:
+//       return "#ffee58";
+//     case -5:
+//       return "#78ff69";
+//     case -10:
+//       return "#00e5ff";
+//     case -15:
+//       return "#29b6f6";
+//     case -20:
+//       return "#448aff";
+//     case -25:
+//       return "#7c4dff";
+//     case -30:
+//       return "#ff4081";
+//     case -35:
+//       return "#ff7043";
+//     case -40:
+//       return "#ffc107";
+//     case -45:
+//       return "#00ffaa";
+//     default:
+//       return "#ffffff";
+//   }
+// }
+
 export function getIsobathColor(contour) {
-  switch (Math.round(Number(contour))) {
-    case 0:
-      return "#ffee58";
-    case -5:
-      return "#78ff69";
-    case -10:
-      return "#00e5ff";
-    case -15:
-      return "#29b6f6";
-    case -20:
-      return "#448aff";
-    case -25:
-      return "#7c4dff";
-    case -30:
-      return "#ff4081";
-    case -35:
-      return "#ff7043";
-    case -40:
-      return "#ffc107";
-    case -45:
-      return "#00ffaa";
-    default:
-      return "#ffffff";
-  }
+  const rounded = Math.round(Number(contour));
+  return COLOR_MAP[rounded] ?? "#ffffff";
 }
 
 export function getIsobathWeight(contour) {

@@ -1,14 +1,6 @@
 import React, {useState} from "react";
 import {ChevronsUpDown, RefreshCw, Waves} from "lucide-react";
-import {
-    formatMeters,
-    formatSeconds,
-    formatTideTime,
-    formatWindDirection,
-    formatWindSpeed,
-    getTodayTideEvents,
-    groupThreeDayTideEvents
-} from "../services/tides.js";
+import {formatMeters, formatSeconds, formatTideTime, formatWindDirection, formatWindSpeed, getTodayTideEvents, groupThreeDayTideEvents} from "../services/tides.js";
 
 function Section({title, icon: Icon, children}) {
     return (
@@ -66,8 +58,18 @@ function TidePanel({tideInfo, tideStatus, tideError, tideCoordinate, onRefreshTi
                                 [t("tide.seaLevel"), formatMeters(tideInfo.currentSeaLevel, t)],
                                 [t("tide.waveHeight"), formatMeters(tideInfo.waveHeight, t)],
                                 [t("tide.wavePeriod"), formatSeconds(tideInfo.wavePeriod, t)],
+                                [t("tide.waveSource"), tideInfo.waveSource ?? t("notAvailable")],
                                 [t("tide.windSpeed"), formatWindSpeed(tideInfo.windSpeed, t)],
                                 [t("tide.windDirection"), formatWindDirection(tideInfo.windDirection, t)]]}/>
+                        {tideInfo.wavePoint && (
+                            <p className="rounded-md border border-cyan-300/15 bg-cyan-400/10 px-2 py-1 text-[11px] leading-4 text-cyan-100">
+                                {t("tide.nearshorePoint", {
+                                    name: tideInfo.wavePoint.name ?? tideInfo.wavePoint.sitecode,
+                                    id: tideInfo.wavePoint.sitecode ?? tideInfo.wavePoint.id,
+                                    distance: tideInfo.wavePointDistanceKm?.toFixed(1) ?? t("notAvailable")
+                                })}
+                            </p>
+                        )}
                         <div className="rounded-md border border-sky-300/15 bg-sky-400/10 p-2">
                             <p className="mb-2 text-xs font-semibold text-sky-100">
                                 {t("tide.today")}
@@ -138,7 +140,7 @@ function CompactTideMetrics({items}) {
             {items.map(([title, value]) => (
                 <div key={title} className="flex min-w-0 items-center justify-between gap-1">
                     <span className="truncate text-slate-400">{title}</span>
-                    <span className="shrink-0 font-semibold text-slate-100">{value}</span>
+                    <span className="min-w-0 truncate font-semibold text-slate-100">{value}</span>
                 </div>
             ))}
         </div>
