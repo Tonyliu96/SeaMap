@@ -90,7 +90,7 @@ export default function MhlWaveBuoyLayer({ enabled, selectedBuoy, onSelectBuoy, 
         direction={wind.direction}
         speed={wind.speed}/>
       {status === "error" && (
-        <div className="pointer-events-none absolute right-4 top-24 z-[650] rounded-lg border border-rose-300/30 bg-slate-900/85 px-3 py-2 text-xs text-rose-100 shadow-marine backdrop-blur-md">
+        <div className="pointer-events-none absolute right-4 top-24 z-[650] rounded-lg border border-rose-300/30 bg-slate-900/[0.85] px-3 py-2 text-xs text-rose-100 shadow-marine backdrop-blur-md">
           {t("mhl.loadError")}
         </div>
       )}

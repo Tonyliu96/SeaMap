@@ -112,6 +112,10 @@ export default function App() {
         onTidePointQuery={queryPointTide}
         t={t}/>
 
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[600] h-28 bg-gradient-to-b from-slate-950/[0.45] via-slate-950/[0.16] to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[600] h-32 bg-gradient-to-t from-slate-950/[0.36] via-slate-950/[0.12] to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-[600] ring-1 ring-inset ring-white/[0.08]" />
+
       {selectedRegion === "NSW" && (
         <MhlBuoyForecastPanel
           buoy={selectedMhlBuoy}

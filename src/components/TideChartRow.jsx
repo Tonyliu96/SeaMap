@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
 export default function TideChartRow({ label, values }) {
-    const height = 90; // 稍微增加高度给标签留出空间
-    const cellWidth = 48;
+    const height = 74;
+    const cellWidth = 44;
     const totalWidth = values.length * cellWidth;
     const padding = 22;
 
@@ -59,32 +59,25 @@ export default function TideChartRow({ label, values }) {
 
     return (
         <>
-            {/* Fixed heading on the left */}
             <div className="mhl-grid-label sticky left-0 z-20 flex flex-col justify-center bg-slate-900/95 font-medium text-slate-300">
                 <span>{label}</span>
             </div>
 
-            {/* Right-side wave pattern */}
             <div className="relative bg-slate-950/60" style={{ gridColumn: `span ${values.length}`, height: `${height}px` }}>
                 <svg width={totalWidth} height={height} className="absolute left-0 top-0 overflow-visible">
                     <defs>
-                        {/* Wave-like color gradient */}
                         <linearGradient id="tide-gradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.35" />
                             <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
                         </linearGradient>
                     </defs>
 
-                    {/* MSL (dashed line) */}
                     <line x1="0" y1={zeroY} x2={totalWidth} y2={zeroY} stroke="#64748b" strokeDasharray="3 3" strokeOpacity="0.5" strokeWidth="1"/>
 
-                    {/* Wave gradient fill */ }
                     <path d={areaD} fill="url(#tide-gradient)" />
 
-                    {/* Main wave line */}
                     <path d={pathD} fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/>
 
-                    {/* Highlighting extreme points and bubble text */}
                     {peakPoints.map((pt, idx) => {
                         const isHigh = pt.value >= 0;
                         const textY = isHigh ? pt.y - 12 : pt.y + 14;
@@ -94,13 +87,10 @@ export default function TideChartRow({ label, values }) {
 
                         return (
                             <g key={idx}>
-                                {/* Tidal point ring */}
                                 <circle cx={pt.x} cy={pt.y} r="3.5" fill="#38bdf8" stroke="#0f172a" strokeWidth="1.5" />
 
-                                {/* Capsule background frame */}
                                 <rect x={pt.x - 30} y={textY - 9} width="60" height="14" rx="4" fill="#0f172a" fillOpacity="0.75" stroke="#38bdf8" strokeOpacity="0.3" strokeWidth="0.8"/>
 
-                                {/* Text Labels */}
                                 <text x={pt.x} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-sky-100 text-[9px] font-semibold tracking-tight">
                                     {labelText}
                                 </text>

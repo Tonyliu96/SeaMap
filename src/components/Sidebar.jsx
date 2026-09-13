@@ -3,7 +3,6 @@ import {ChevronDown, ChevronsUpDown, ExternalLink, Layers, Map, RefreshCw, Satel
 import { australiaStates } from "../constants/australiaStates.js";
 import {loadNswLidarCatalog} from "../services/nswLidar.js";
 import {languageOptions} from "../constants/localization.js";
-import {formatMeters, formatSeconds, formatTideTime, formatWindDirection, formatWindSpeed, getTodayTideEvents, groupThreeDayTideEvents} from "../services/tides.js";
 import TideSection from "../components/TideSection.jsx";
 
 const baseMaps = [
@@ -69,7 +68,7 @@ export default function Sidebar({
   return (
       <>
         <button type="button" aria-label={isOpen ? t("panel.collapse") : t("panel.expand")}
-            className="absolute left-4 top-4 z-[720] grid h-12 w-12 place-items-center rounded-lg border border-white/15 bg-slate-900/80 text-slate-100 shadow-marine backdrop-blur-md transition hover:bg-sky-900/70 active:scale-95 md:left-6 md:top-10 md:h-11 md:w-11"
+            className="absolute left-4 top-4 z-[720] grid h-12 w-12 place-items-center rounded-lg border border-cyan-200/20 bg-slate-950/[0.82] text-slate-100 shadow-marine backdrop-blur-md transition hover:border-cyan-200/40 hover:bg-sky-950/[0.86] active:scale-95 md:left-6 md:top-10 md:h-11 md:w-11"
             onClick={() => setIsOpen(!isOpen)}>
           <div className="flex h-6 w-6 flex-col justify-between items-center py-0.5 md:h-5 md:w-5 md:py-0">
             <span className="h-[2.5px] w-full rounded-full bg-current md:h-[2px]"/>
@@ -78,12 +77,12 @@ export default function Sidebar({
           </div>
         </button>
 
-        <aside className={`absolute z-[710] overflow-hidden border border-white/15 bg-slate-900/80 shadow-marine backdrop-blur-md transition-all duration-300 ease-out md:bottom-4 md:left-6 md:top-24 md:w-[340px] md:rounded-lg ${isOpen
+        <aside className={`absolute z-[710] overflow-hidden border border-cyan-100/[0.15] bg-slate-950/[0.84] shadow-marine backdrop-blur-xl transition-all duration-300 ease-out md:bottom-4 md:left-6 md:top-24 md:w-[350px] md:rounded-lg ${isOpen
                 ? "bottom-4 left-4 right-4 max-h-[calc(100dvh-7rem)] rounded-lg md:max-h-none md:translate-x-0"
                 : "bottom-0 left-0 right-0 max-h-[76px] rounded-t-lg md:max-h-none md:-translate-x-[370px]"}`}>
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="flex items-center justify-between gap-3 border-b border-cyan-200/10 bg-gradient-to-r from-slate-950 via-sky-950/70 to-slate-950 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-cyan-400/15 text-cyan-300">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-cyan-200/[0.15] bg-cyan-400/[0.12] text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,0.08)]">
                 <Layers size={18}/>
               </div>
               <div className="min-w-0">
@@ -100,9 +99,9 @@ export default function Sidebar({
             </button>
           </div>
 
-          <div className={`max-h-[calc(100dvh-11rem)] space-y-5 overflow-y-auto overscroll-contain px-4 py-4 md:max-h-[calc(100dvh-11rem)] ${isOpen ? "block" : "hidden md:block"}`}>
+          <div className={`marine-scrollbar max-h-[calc(100dvh-11rem)] space-y-5 overflow-y-auto overscroll-contain px-4 py-4 md:max-h-[calc(100dvh-11rem)] ${isOpen ? "block" : "hidden md:block"}`}>
             <Section title={t("language.section")} icon={SlidersHorizontal}>
-              <label className="block rounded-md border border-white/10 bg-white/5 p-3">
+              <label className="block rounded-md border border-white/10 bg-white/[0.045] p-3 transition focus-within:border-cyan-300/45">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
                 {t("language.current")}
               </span>
@@ -123,9 +122,9 @@ export default function Sidebar({
                   const Icon = item.icon;
                   const active = baseMap === item.id;
                   return (
-                      <button key={item.id} type="button" className={`flex min-h-16 flex-col items-start justify-between rounded-md border p-3 text-left text-sm transition ${active
-                              ? "border-cyan-300/70 bg-sky-500/20 text-white"
-                              : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"}`}
+                      <button key={item.id} type="button" className={`flex min-h-16 flex-col items-start justify-between rounded-md border p-3 text-left text-sm transition active:scale-[0.98] ${active
+                              ? "border-cyan-300/70 bg-cyan-300/[0.14] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                              : "border-white/10 bg-white/[0.045] text-slate-300 hover:border-white/20 hover:bg-white/[0.09]"}`}
                           onClick={() => setBaseMap(item.id)}>
                         <Icon size={18}/>
                         <span>{t(item.labelKey)}</span>
@@ -136,7 +135,7 @@ export default function Sidebar({
             </Section>
 
             <Section title={t("section.region")} icon={Map}>
-              <label className="block rounded-md border border-white/10 bg-white/5 p-3">
+              <label className="block rounded-md border border-white/10 bg-white/[0.045] p-3 transition focus-within:border-cyan-300/45">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
                 {t("region.current")}
               </span>
@@ -152,7 +151,7 @@ export default function Sidebar({
 
             <Section title={t("section.bathymetry")} icon={Layers}>
               <button type="button" aria-pressed={bathymetryEnabled}
-                  className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-3 text-left transition hover:bg-white/10"
+                  className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.045] px-3 py-3 text-left transition hover:border-cyan-200/25 hover:bg-white/[0.09] active:scale-[0.99]"
                   onClick={() => setBathymetryEnabled(!bathymetryEnabled)}>
               <span className="min-w-0">
                 <span className="block text-sm text-slate-100">{t("bathymetry.show")}</span>
@@ -162,8 +161,8 @@ export default function Sidebar({
                       : t("bathymetry.ausSource")}
                 </span>
               </span>
-                <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${bathymetryEnabled ? "bg-sky-500" : "bg-slate-700"}`}>
-                <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${bathymetryEnabled ? "translate-x-5" : ""}`}/>
+                <span className={`relative h-6 w-11 shrink-0 rounded-full shadow-inner transition-colors duration-200 ${bathymetryEnabled ? "bg-sky-500" : "bg-slate-700"}`}>
+                <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${bathymetryEnabled ? "translate-x-5" : ""}`}/>
               </span>
               </button>
 
@@ -172,7 +171,7 @@ export default function Sidebar({
                 <LayerCheck label={t("bathymetry.isobaths")} checked={showIsobaths} disabled={!bathymetryEnabled || !isNswBathymetry} onChange={setShowIsobaths}/>
                 <LayerCheck label={t("bathymetry.ahoDepths")} checked={showAhoDepths} disabled={!bathymetryEnabled} onChange={setShowAhoDepths}/>
                 {showAhoDepths && (
-                    <p className="rounded-md border border-sky-300/20 bg-sky-400/10 px-3 py-2 text-xs leading-5 text-red-500">
+                    <p className="rounded-md border border-sky-300/20 bg-sky-400/10 px-3 py-2 text-xs leading-5 text-amber-100">
                       {t("bathymetry.ahoNote")}
                     </p>
                 )}
@@ -182,7 +181,7 @@ export default function Sidebar({
                     </p>
                 )}
 
-                <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                <div className="rounded-md border border-white/10 bg-white/[0.045] p-3">
                   <div className="mb-3 flex items-center justify-between gap-3 text-sm">
                   <span className="flex items-center gap-2 text-slate-100">
                     <SlidersHorizontal size={16}/>
@@ -204,7 +203,7 @@ export default function Sidebar({
 
             <Section title={t("section.mpa")} icon={ShieldCheck}>
               <button type="button" aria-pressed={marineProtectedEnabled}
-                  className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-3 text-left transition hover:bg-white/10"
+                  className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.045] px-3 py-3 text-left transition hover:border-emerald-200/25 hover:bg-white/[0.09] active:scale-[0.99]"
                   onClick={() => setMarineProtectedEnabled(!marineProtectedEnabled)}>
               <span className="min-w-0">
                 <span className="block text-sm text-slate-100">
@@ -214,13 +213,13 @@ export default function Sidebar({
                   {t("mpa.source")}
                 </span>
               </span>
-                <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${marineProtectedEnabled ? "bg-emerald-500" : "bg-slate-700"}`}>
-                <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${marineProtectedEnabled ? "translate-x-5" : ""}`}/>
+                <span className={`relative h-6 w-11 shrink-0 rounded-full shadow-inner transition-colors duration-200 ${marineProtectedEnabled ? "bg-emerald-500" : "bg-slate-700"}`}>
+                <span className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${marineProtectedEnabled ? "translate-x-5" : ""}`}/>
               </span>
               </button>
 
               <div className={marineProtectedEnabled ? "mt-3 space-y-3" : "mt-3 space-y-3 opacity-45"}>
-                <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                <div className="rounded-md border border-white/10 bg-white/[0.045] p-3">
                   <div className="mb-3 flex items-center justify-between gap-3 text-sm">
                   <span className="flex items-center gap-2 text-slate-100">
                     <SlidersHorizontal size={16}/>
@@ -287,7 +286,7 @@ export default function Sidebar({
 
 function LayerCheck({ label, checked, disabled, onChange }) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100">
+    <label className="flex cursor-pointer items-center gap-3 rounded-md border border-white/10 bg-white/[0.045] px-3 py-2 text-sm text-slate-100 transition hover:border-cyan-200/25 hover:bg-white/[0.08] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
       <input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)}
         className="h-4 w-4 rounded border-slate-500 accent-cyan-400"/>
       <span className="min-w-0 truncate">{label}</span>
@@ -297,9 +296,9 @@ function LayerCheck({ label, checked, disabled, onChange }) {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section>
+    <section className="relative">
       <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
-        <Icon size={14} />
+        <Icon size={14} className="text-cyan-300/[0.85]" />
         {title}
       </h3>
       {children}

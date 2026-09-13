@@ -138,11 +138,11 @@ export default function MarineMap({
         setSelectedTideInfo={setSelectedTideInfo}
         t={t}/>
 
-      <div className="absolute bottom-4 right-4 z-[650] rounded-lg border border-white/15 bg-slate-900/80 px-3 py-2 text-xs text-slate-100 shadow-marine backdrop-blur-md">
-        <div>{t("telemetry.lat")} {cursor.lat.toFixed(5)}</div>
-        <div>{t("telemetry.lng")} {cursor.lng.toFixed(5)}</div>
-        <div>{t("telemetry.zoom")} {cursor.zoom}</div>
-        <div>{t("telemetry.lidar")}{" "}{lidarStatus === "ready"
+      <div className="absolute bottom-4 right-4 z-[650] rounded-lg border border-cyan-100/[0.14] bg-slate-950/[0.78] px-3 py-2 text-[11px] text-slate-200 shadow-marine backdrop-blur-md">
+        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.lat")}</span><span>{cursor.lat.toFixed(5)}</span></div>
+        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.lng")}</span><span>{cursor.lng.toFixed(5)}</span></div>
+        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.zoom")}</span><span>{cursor.zoom}</span></div>
+        <div className="mt-1 max-w-[210px] truncate text-slate-400">{t("telemetry.lidar")}{" "}{lidarStatus === "ready"
             ? `${lidarCoverage?.features?.length ?? 0} ${t("telemetry.polygons")}`
             : lidarStatus}
         </div>

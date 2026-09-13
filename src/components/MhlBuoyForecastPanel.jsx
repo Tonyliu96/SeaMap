@@ -3,7 +3,7 @@ import { Waves, Wind, X } from "lucide-react";
 import { fetchMhlBuoyForecast } from "../services/mhlWaves.js";
 import {formatMeters, formatSeconds, formatWindDirection, formatWindSpeed} from "../services/tides.js";
 import TideChartRow from "./TideChartRow.jsx";
-import {formatHour,formatNumber, formatObservedAt, groupHoursByDay} from "../utils/mhlFormatters.js";
+import {formatDateKey, formatHour,formatNumber, formatObservedAt, groupHoursByDay} from "../utils/mhlFormatters.js";
 
 
 const VISIBLE_HOURS = 96;
@@ -50,8 +50,8 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
   if (!buoy) return null;
 
   return (
-    <section className="absolute bottom-3 left-3 right-3 z-[700] max-h-[34dvh] overflow-hidden rounded-lg border border-cyan-300/20 bg-slate-950/92 text-slate-100 shadow-[0_-20px_70px_rgba(2,6,23,0.42)] backdrop-blur-md md:left-4 md:right-4">
-      <div className="flex items-start justify-between gap-3 border-b border-cyan-300/15 bg-gradient-to-r from-slate-950 via-sky-950/92 to-slate-900 px-3 py-2">
+    <section className="absolute bottom-3 left-3 right-3 z-[700] max-h-[32dvh] overflow-hidden rounded-lg border border-cyan-300/20 bg-slate-950/[0.92] text-slate-100 shadow-[0_-20px_70px_rgba(2,6,23,0.42)] backdrop-blur-xl md:left-4 md:right-4">
+      <div className="flex items-start justify-between gap-3 border-b border-cyan-300/[0.15] bg-gradient-to-r from-slate-950 via-sky-950/[0.88] to-slate-950 px-3 py-2">
         <div className="flex min-w-0 items-start gap-2.5">
           <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md border border-cyan-300/20 bg-cyan-400/10 text-cyan-200">
             <Waves size={16} />
@@ -79,7 +79,7 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
         </button>
       </div>
 
-      <div className="max-h-[calc(34dvh-54px)] overflow-y-auto p-2 [scrollbar-color:rgba(103,232,249,0.65)_rgba(15,23,42,0.55)] [scrollbar-width:thin]">
+      <div className="marine-scrollbar max-h-[calc(32dvh-54px)] overflow-y-auto p-2">
         {status === "loading" && (
           <div className="rounded-md border border-white/10 bg-white/5 px-3 py-4 text-sm text-slate-300">
             {t("mhl.forecastLoading")}
@@ -96,10 +96,10 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
           <>
             <CurrentObservation latest={forecast?.latest} hourStep={hourStep} setHourStep={setHourStep} t={t}/>
 
-            <div className="mt-3 overflow-x-auto rounded-md border border-white/10 bg-white/5 [scrollbar-color:rgba(103,232,249,0.65)_rgba(15,23,42,0.55)] [scrollbar-width:thin]">
+            <div className="marine-scrollbar mt-2.5 overflow-x-auto rounded-md border border-white/10 bg-slate-950/[0.45]">
               <div
                 className="mhl-forecast-grid min-w-max"
-                style={{ gridTemplateColumns: `72px repeat(${hours.length}, 48px)` }}>
+                style={{ gridTemplateColumns: `68px repeat(${hours.length}, 44px)` }}>
                 <DayRow hours={hours} t={t} />
                 <HeaderRow hours={hours} t={t} />
                 <ArrowRow label={t("mhl.wind")} values={hours} field="windDirection" />
@@ -119,7 +119,7 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
                 <TideChartRow label={t("mhl.tideMsl")} values={hours} />
               </div>
             </div>
-            <p className="mt-1.5 text-[10px] leading-3 text-slate-400">
+            <p className="mt-1.5 text-[10px] leading-3 text-slate-500">
               {t("mhl.disclaimer")}
             </p>
           </>
@@ -131,20 +131,55 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
 
 function DayRow({ hours, t }) {
   const dayGroups = groupHoursByDay(hours, t);
+  const now = new Date();
+  const todayKey = formatDateKey(now);
+  const nowIndex = findNearestHourIndex(hours, now, todayKey);
+  let groupStart = 0;
 
   return (
     <>
       <div className="mhl-grid-label mhl-day-cell sticky left-0 z-20 justify-end">{t("mhl.day")}</div>
-      {dayGroups.map((group) => (
-        <div
-          key={group.key}
-          className="mhl-day-cell mhl-day-group"
-          style={{ gridColumn: `span ${group.count}` }}>
-          {group.label}
-        </div>
-      ))}
+      {dayGroups.map((group) => {
+        const start = groupStart;
+        groupStart += group.count;
+        const showNow = group.key === todayKey && nowIndex >= start && nowIndex < start + group.count;
+        const nowLeft = showNow
+          ? `${((nowIndex - start + 0.5) / group.count) * 100}%`
+          : "50%";
+
+        return (
+          <div
+            key={group.key}
+            className="mhl-day-cell mhl-day-group relative"
+            style={{ gridColumn: `span ${group.count}` }}>
+            <span className="truncate">{group.label}</span>
+            {showNow && (
+              <span className="mhl-now-marker" style={{ left: nowLeft }}>
+                {t("mhl.now")}
+              </span>
+            )}
+          </div>
+        );
+      })}
     </>
   );
+}
+
+function findNearestHourIndex(hours, now, todayKey) {
+  let nearestIndex = -1;
+  let nearestDistance = Infinity;
+
+  hours.forEach((hour, index) => {
+    if (!(hour.time instanceof Date) || formatDateKey(hour.time) !== todayKey) return;
+    const distance = Math.abs(hour.time.getTime() - now.getTime());
+
+    if (distance < nearestDistance) {
+      nearestIndex = index;
+      nearestDistance = distance;
+    }
+  });
+
+  return nearestIndex;
 }
 
 
@@ -156,8 +191,7 @@ function CurrentObservation({ latest, hourStep, setHourStep, t }) {
         <Metric title={t("mhl.latestWaveDirection")} value={formatWindDirection(latest?.waveDirection, t)} />
         <Metric title={t("mhl.observedAt")} value={formatObservedAt(latest?.observedAt, t)} />
 
-        {/* 1h / 3h 步长切换按钮，并排嵌入最右侧 */}
-        <div className="ml-auto flex items-center overflow-hidden rounded-md border border-cyan-300/15 bg-slate-900/80 p-0.5">
+        <div className="ml-auto flex items-center overflow-hidden rounded-md border border-cyan-300/[0.15] bg-slate-900/80 p-0.5">
           {[1, 3].map((step) => (
               <button
                   key={step}
@@ -178,8 +212,8 @@ function CurrentObservation({ latest, hourStep, setHourStep, t }) {
 
 function Metric({ title, value }) {
   return (
-      <div className="min-w-[150px] rounded-md border border-cyan-300/15 bg-sky-950/70 px-2 py-1">
-        <p className="truncate text-[9px] uppercase tracking-wider text-cyan-200">{title}</p>
+      <div className="min-w-[138px] rounded-md border border-cyan-300/[0.15] bg-slate-900/[0.78] px-2 py-1">
+        <p className="truncate text-[9px] uppercase tracking-wider text-cyan-200/90">{title}</p>
         <p className="mt-0.5 truncate text-[11px] font-semibold text-white">{value}</p>
       </div>
   );
@@ -246,4 +280,3 @@ function ValueRow({ icon: Icon, label, values, field, formatter, colorClass }) {
       </>
   );
 }
-
