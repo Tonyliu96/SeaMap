@@ -6,6 +6,10 @@ export function normaliseDegrees(value) {
   return ((value % 360) + 360) % 360;
 }
 
+export function oppositeBearing(direction) {
+  return normaliseDegrees(direction + 180);
+}
+
 export function vectorFromBearing(degrees) {
   const radians = degreesToRadians(degrees);
   return {

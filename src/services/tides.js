@@ -1,9 +1,9 @@
 import { fetchMhlWaveInfo } from "./mhlWaves.js";
+import { estimateTideExtrema } from "../utils/tideExtrema.js";
 
 const MARINE_API = "https://marine-api.open-meteo.com/v1/marine";
 const FORECAST_API = "https://api.open-meteo.com/v1/forecast";
 const TIMEZONE = "Australia/Sydney";
-const DUPLICATE_EVENT_WINDOW_MS = 3 * 60 * 60 * 1000;
 
 export async function fetchTideInfo({ lat, lng }) {
   const [marine, wind, mhlWaves] = await Promise.all([
@@ -12,9 +12,7 @@ export async function fetchTideInfo({ lat, lng }) {
     fetchMhlWaveInfo({ lat, lng }).catch(() => null)
   ]);
 
-  const events = mergeNearbyDuplicateEvents(
-    extractTideEvents(marine.hourly).sort((a, b) => a.time - b.time)
-  );
+  const events = extractTideEvents(marine.hourly).sort((a, b) => a.time - b.time);
   const now = new Date();
 
   return {
@@ -100,7 +98,9 @@ async function fetchMarine(lat, lng) {
     current: "wave_height,wave_period,sea_level_height_msl",
     hourly: "sea_level_height_msl",
     forecast_days: "3",
-    timezone: TIMEZONE
+    timezone: TIMEZONE,
+    timeformat: "unixtime",
+    cell_selection: "sea"
   });
   const response = await fetch(`${MARINE_API}?${params}`);
   if (!response.ok) throw new Error("Unable to fetch marine data");
@@ -113,7 +113,8 @@ async function fetchWind(lat, lng) {
     longitude: String(lng),
     current: "wind_speed_10m,wind_direction_10m",
     wind_speed_unit: "kmh",
-    timezone: TIMEZONE
+    timezone: TIMEZONE,
+    cell_selection: "sea"
   });
   const response = await fetch(`${FORECAST_API}?${params}`);
   if (!response.ok) throw new Error("Unable to fetch wind data");
@@ -123,49 +124,21 @@ async function fetchWind(lat, lng) {
 function extractTideEvents(hourly) {
   const times = hourly?.time ?? [];
   const heights = hourly?.sea_level_height_msl ?? [];
-  const events = [];
-
-  for (let index = 1; index < times.length - 1; index += 1) {
-    const previous = heights[index - 1];
-    const current = heights[index];
-    const next = heights[index + 1];
-    if (![previous, current, next].every(Number.isFinite)) continue;
-
-    if (current >= previous && current >= next) {
-      events.push({ kind: "high", time: parseSydneyTime(times[index]), height: current });
-    } else if (current <= previous && current <= next) {
-      events.push({ kind: "low", time: parseSydneyTime(times[index]), height: current });
-    }
-  }
-
-  return events;
+  return estimateTideExtrema(times.map((time, index) => ({
+    time: parseApiTime(time),
+    value: numberOrNull(heights[index])
+  })));
 }
 
-function mergeNearbyDuplicateEvents(events) {
-  const merged = [];
-
-  for (const event of events) {
-    const previous = merged.at(-1);
-    if (
-      previous &&
-      previous.kind === event.kind &&
-      event.time - previous.time <= DUPLICATE_EVENT_WINDOW_MS
-    ) {
-      const replace =
-        event.kind === "high"
-          ? event.height > previous.height
-          : event.height < previous.height;
-      if (replace) merged[merged.length - 1] = event;
-      continue;
-    }
-    merged.push(event);
-  }
-
-  return merged;
+function numberOrNull(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
-function parseSydneyTime(value) {
-  return new Date(`${value}:00+10:00`);
+function parseApiTime(value) {
+  if (typeof value === "number") return new Date(value * 1000);
+  return new Date(value);
 }
 
 function startOfSydneyDay(date) {
@@ -178,7 +151,26 @@ function startOfSydneyDay(date) {
   const year = parts.find((part) => part.type === "year")?.value;
   const month = parts.find((part) => part.type === "month")?.value;
   const day = parts.find((part) => part.type === "day")?.value;
-  return new Date(`${year}-${month}-${day}T00:00:00+10:00`);
+  const noon = new Date(`${year}-${month}-${day}T12:00:00Z`);
+  const offsetMinutes = getSydneyOffsetMinutes(noon);
+  return new Date(Date.UTC(+year, +month - 1, +day) - offsetMinutes * 60 * 1000);
+}
+
+function getSydneyOffsetMinutes(date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  const value = (type) => Number(parts.find((part) => part.type === type)?.value);
+  const representedUtc = Date.UTC(
+    value("year"), value("month") - 1, value("day"), value("hour"), value("minute")
+  );
+  return Math.round((representedUtc - date.getTime()) / 60000);
 }
 
 function formatDateKey(date) {

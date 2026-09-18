@@ -4,6 +4,7 @@ import { fetchMhlBuoyForecast } from "../services/mhlWaves.js";
 import {formatMeters, formatSeconds, formatWindDirection, formatWindSpeed} from "../services/tides.js";
 import TideChartRow from "./TideChartRow.jsx";
 import {formatDateKey, formatHour,formatNumber, formatObservedAt, groupHoursByDay} from "../utils/mhlFormatters.js";
+import { oppositeBearing } from "../utils/mapVectors.js";
 
 
 const VISIBLE_HOURS = 96;
@@ -243,7 +244,7 @@ function ArrowRow({label, values, field, strong = false}) {
             <div key={`${field}-${hour.time.toISOString()}`}
                  className={strong ? "mhl-arrow-cell is-wave" : "mhl-arrow-cell"}>
               {Number.isFinite(hour[field]) ? (
-                  <span style={{transform: `rotate(${hour[field]}deg)` }}>&#8593;</span>
+                  <span style={{transform: `rotate(${arrowBearing(hour[field], field)}deg)` }}>&#8593;</span>
           ) : (
             <span className="text-slate-500">-</span>
           )}
@@ -251,6 +252,12 @@ function ArrowRow({label, values, field, strong = false}) {
       ))}
     </>
   );
+}
+
+function arrowBearing(direction, field) {
+  return field === "waveDirection" || field === "windDirection"
+    ? oppositeBearing(direction)
+    : direction;
 }
 
 function ValueRow({ icon: Icon, label, values, field, formatter, colorClass }) {
@@ -266,7 +273,10 @@ function ValueRow({ icon: Icon, label, values, field, formatter, colorClass }) {
 
           let dynamicColor = colorClass ?? "mhl-grid-cell";
           if (field === "waveHeight") {
-            dynamicColor = val > 1.5
+            const displayedWaveHeight = Number.isFinite(val)
+              ? Number(val.toFixed(1))
+              : null;
+            dynamicColor = displayedWaveHeight >= 1.5
                 ? "font-bold text-rose-200 bg-rose-950/60 drop-shadow"
                 : "font-semibold text-sky-200 bg-sky-950/30";
           }

@@ -25,7 +25,7 @@ export async function fetchMhlWaveInfo({ lat, lng }) {
 
   const latest = await fetchMhlBuoyLatest(nearest.buoy.sitecode);
 
-  if (!latest.waveHeight && !latest.wavePeriod && !latest.waveDirection) return null;
+  if (![latest.waveHeight, latest.wavePeriod, latest.waveDirection].some(Number.isFinite)) return null;
 
   return {
     source: "MHL NSW Ocean Wave Buoy",
@@ -110,7 +110,7 @@ export async function fetchMhlBuoyLatest(sitecode) {
   const waveHeight = findLatestValue(latest, "Wave Height");
   const wavePeriod = findLatestValue(latest, "Wave Period");
   const waveDirection = findLatestValue(latest, "Wave Direction");
-  const seaTemperature = findLatestValue(latest, "Sea Temp");
+  const seaTemperature = findLatestValue(latest, "Sea Temperature");
 
   return {
     waveHeight: waveHeight?.value ?? null,
@@ -141,7 +141,9 @@ async function fetchOpenMeteoCurrent(lat, lng) {
     longitude: String(lng),
     current: "wind_speed_10m,wind_direction_10m,temperature_2m",
     wind_speed_unit: "kmh",
-    timezone: TIMEZONE
+    timezone: TIMEZONE,
+    timeformat: "unixtime",
+    cell_selection: "sea"
   });
   const response = await fetch(`${FORECAST_API}?${params}`);
   if (!response.ok) throw new Error("Unable to fetch buoy wind data");
@@ -160,7 +162,9 @@ async function fetchOpenMeteoHourly(lat, lng) {
     hourly: "wind_speed_10m,wind_direction_10m,temperature_2m,cloud_cover,precipitation",
     wind_speed_unit: "kmh",
     forecast_days: FORECAST_DAYS,
-    timezone: TIMEZONE
+    timezone: TIMEZONE,
+    timeformat: "unixtime",
+    cell_selection: "sea"
   });
   const response = await fetch(`${FORECAST_API}?${params}`);
   if (!response.ok) throw new Error("Unable to fetch buoy weather forecast");
@@ -173,7 +177,9 @@ async function fetchOpenMeteoMarineHourly(lat, lng) {
     longitude: String(lng),
     hourly: "wave_height,wave_period,wave_direction,sea_level_height_msl",
     forecast_days: FORECAST_DAYS,
-    timezone: TIMEZONE
+    timezone: TIMEZONE,
+    timeformat: "unixtime",
+    cell_selection: "sea"
   });
   const response = await fetch(`${MARINE_API}?${params}`);
   if (!response.ok) throw new Error("Unable to fetch buoy marine forecast");
@@ -227,8 +233,10 @@ function findLatestValue(readings, unitType) {
 }
 
 function parseSydneyTime(value) {
-  if (!value) return null;
-  const date = new Date(`${String(value)}:00+10:00`);
+  if (value === null || value === undefined || value === "") return null;
+  const date = typeof value === "number"
+    ? new Date(value * 1000)
+    : parseSydneyWallTime(String(value));
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -260,11 +268,49 @@ function toRadians(value) {
 
 function parseMhlTimestamp(value) {
   if (!value) return null;
-  const date = new Date(`${String(value).replace(" ", "T")}+10:00`);
+  const date = parseSydneyWallTime(String(value).replace(" ", "T"));
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function parseSydneyWallTime(value) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+  if (!match) return new Date(value);
+
+  const [, year, month, day, hour, minute, second = "0"] = match;
+  const wallClockUtc = Date.UTC(+year, +month - 1, +day, +hour, +minute, +second);
+  let date = new Date(wallClockUtc);
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    date = new Date(wallClockUtc - timeZoneOffsetMs(date, TIMEZONE));
+  }
+  return date;
+}
+
+function timeZoneOffsetMs(date, timeZone) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  const value = (type) => Number(parts.find((part) => part.type === type)?.value);
+  const representedUtc = Date.UTC(
+    value("year"),
+    value("month") - 1,
+    value("day"),
+    value("hour"),
+    value("minute"),
+    value("second")
+  );
+  return representedUtc - date.getTime();
+}
+
 function numberOrNull(value) {
+  if (value === null || value === undefined || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }

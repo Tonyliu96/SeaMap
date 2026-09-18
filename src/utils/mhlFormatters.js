@@ -62,13 +62,13 @@ export function formatDayLabel(date, t) {
 }
 
 export function daysFromToday(date) {
-    const today = startOfSydneyDay(new Date());
-    const target = startOfSydneyDay(date);
+    const today = Date.parse(`${formatDateKey(new Date())}T00:00:00Z`);
+    const target = Date.parse(`${formatDateKey(date)}T00:00:00Z`);
     return Math.round((target - today) / 86400000);
 }
 
 export function startOfSydneyDay(date) {
-    return new Date(`${formatDateKey(date)}T00:00:00+10:00`);
+    return new Date(`${formatDateKey(date)}T00:00:00Z`);
 }
 
 export function formatDateKey(date) {

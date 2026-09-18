@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { estimateTideExtrema } from "../utils/tideExtrema.js";
 
 export default function TideChartRow({ label, values }) {
     const height = 74;
@@ -45,17 +46,27 @@ export default function TideChartRow({ label, values }) {
         return `${pathD} L ${lastX},${height} L ${firstX},${height} Z`;
     }, [pathD, points, height]);
 
-    // Calculate extreme points (high tide / low tide)
     const peakPoints = useMemo(() => {
-        return points.filter((pt, i, arr) => {
-            if (i === 0 || i === arr.length - 1 || !Number.isFinite(pt.value)) return false;
-            const prev = arr[i - 1].value;
-            const next = arr[i + 1].value;
-            const isHigh = pt.value > prev && pt.value >= next;
-            const isLow = pt.value < prev && pt.value <= next;
-            return isHigh || isLow;
+        const extrema = estimateTideExtrema(points.map((point) => ({
+            time: point.time,
+            value: point.value
+        })));
+        const firstTime = points[0]?.time?.getTime();
+        const lastTime = points.at(-1)?.time?.getTime();
+        const timeRange = lastTime - firstTime;
+
+        return extrema.map((event) => {
+            const ratio = timeRange > 0 ? (event.time.getTime() - firstTime) / timeRange : 0;
+            const x = cellWidth / 2 + ratio * Math.max(0, totalWidth - cellWidth);
+            const normalizedY = (event.height - minLevel) / range;
+            return {
+                ...event,
+                x,
+                y: height - padding - normalizedY * (height - 2 * padding),
+                value: event.height
+            };
         });
-    }, [points]);
+    }, [points, cellWidth, totalWidth, minLevel, range, height, padding]);
 
     return (
         <>
@@ -79,11 +90,15 @@ export default function TideChartRow({ label, values }) {
                     <path d={pathD} fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/>
 
                     {peakPoints.map((pt, idx) => {
-                        const isHigh = pt.value >= 0;
+                        const isHigh = pt.kind === "high";
                         const textY = isHigh ? pt.y - 12 : pt.y + 14;
-                        const hours = String(pt.time.getHours()).padStart(2, "0");
-                        const mins = String(pt.time.getMinutes()).padStart(2, "0");
-                        const labelText = `${hours}:${mins} ${pt.value.toFixed(1)}m`;
+                        const timeLabel = new Intl.DateTimeFormat("en-AU", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                            timeZone: "Australia/Sydney"
+                        }).format(pt.time);
+                        const labelText = `${timeLabel} ${pt.value.toFixed(1)}m`;
 
                         return (
                             <g key={idx}>

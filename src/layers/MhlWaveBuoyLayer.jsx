@@ -4,7 +4,7 @@ import { Marker, Pane, Popup } from "react-leaflet";
 import {fetchMhlBuoySnapshots} from "../services/mhlWaves.js";
 import {formatMeters, formatSeconds, formatWindDirection, formatWindSpeed} from "../services/tides.js";
 import WindParticleLayer from "./WindParticleLayer.jsx";
-import { averageDirectionalReadings } from "../utils/mapVectors.js";
+import { averageDirectionalReadings, oppositeBearing } from "../utils/mapVectors.js";
 
 export default function MhlWaveBuoyLayer({ enabled, selectedBuoy, onSelectBuoy, t }) {
   const [buoys, setBuoys] = useState([]);
@@ -99,7 +99,9 @@ export default function MhlWaveBuoyLayer({ enabled, selectedBuoy, onSelectBuoy, 
 }
 
 function buoyIcon(buoy, selected) {
-  const rotation = Number.isFinite(buoy.waveDirection) ? buoy.waveDirection : 0;
+  const rotation = Number.isFinite(buoy.waveDirection)
+    ? oppositeBearing(buoy.waveDirection)
+    : 0;
   const height = Number.isFinite(buoy.waveHeight) ? buoy.waveHeight.toFixed(1) : "--";
   return L.divIcon({
     className: "mhl-buoy-icon",
@@ -121,15 +123,21 @@ function resolveParticleWind(buoys, selectedBuoy) {
 
   if (selected && Number.isFinite(selected.windDirection)) {
     return {
-      direction: selected.windDirection,
+      direction: oppositeBearing(selected.windDirection),
       speed: Number.isFinite(selected.windSpeed) ? selected.windSpeed : null
     };
   }
 
-  return averageDirectionalReadings(
+  const average = averageDirectionalReadings(
     buoys.map((buoy) => ({
       direction: buoy.windDirection,
       speed: buoy.windSpeed
     }))
   );
+  return {
+    ...average,
+    direction: Number.isFinite(average.direction)
+      ? oppositeBearing(average.direction)
+      : null
+  };
 }
