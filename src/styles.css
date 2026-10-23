@@ -209,6 +209,92 @@ body {
   background: transparent;
 }
 
+.mhl-panel {
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(28 28 30 / 0.9);
+  box-shadow:
+    0 20px 60px rgb(0 0 0 / 0.36),
+    0 1px 0 rgb(255 255 255 / 0.08) inset;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif;
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+}
+
+.mhl-panel-header {
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(44 44 46 / 0.34);
+}
+
+.mhl-station-symbol {
+  background: #0a84ff;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgb(10 132 255 / 0.26);
+}
+
+.mhl-station-code {
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.58);
+}
+
+.mhl-live-status {
+  color: rgb(255 255 255 / 0.48);
+}
+
+.mhl-icon-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.62);
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.mhl-icon-button:hover {
+  background: rgb(255 255 255 / 0.15);
+  color: #ffffff;
+}
+
+.mhl-observation-strip {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.055);
+}
+
+.mhl-observation-metric {
+  border-right: 1px solid rgb(255 255 255 / 0.075);
+}
+
+.mhl-observation-metric:last-child {
+  border-right: 0;
+}
+
+.mhl-forecast-scroll {
+  border: 1px solid rgb(255 255 255 / 0.085);
+  background: rgb(0 0 0 / 0.2);
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
+
+.mhl-metric-icon {
+  color: #64d2ff;
+}
+
+.mhl-segmented-control {
+  background: rgb(118 118 128 / 0.24);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.04) inset;
+}
+
+.mhl-segmented-control button.is-selected {
+  background: rgb(99 99 102 / 0.92);
+  color: #ffffff;
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.32),
+    0 0 0 0.5px rgb(255 255 255 / 0.11) inset;
+}
+
 .mhl-buoy-button {
   display: grid;
   position: relative;
@@ -291,14 +377,22 @@ body {
 .mhl-forecast-grid {
   display: grid;
   align-items: stretch;
-  color: #e2e8f0;
+  color: rgb(255 255 255 / 0.78);
   font-size: 9px;
 }
 
 .mhl-forecast-grid > * {
   min-height: 24px;
-  border-right: 1px solid rgb(148 163 184 / 0.12);
-  border-bottom: 1px solid rgb(148 163 184 / 0.1);
+  border-right: 1px solid rgb(255 255 255 / 0.055);
+  border-bottom: 1px solid rgb(255 255 255 / 0.055);
+}
+
+.mhl-forecast-grid .is-current-hour {
+  position: relative;
+  box-shadow:
+    1px 0 0 rgb(10 132 255 / 0.72) inset,
+    -1px 0 0 rgb(10 132 255 / 0.72) inset;
+  filter: brightness(1.06);
 }
 
 .mhl-grid-label {
@@ -307,8 +401,9 @@ body {
   gap: 6px;
   justify-content: flex-end;
   padding: 0 7px;
-  color: #a5f3fc;
-  font-weight: 700;
+  background: rgb(28 28 30 / 0.97);
+  color: rgb(255 255 255 / 0.52);
+  font-weight: 600;
   text-align: right;
 }
 
@@ -317,28 +412,33 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgb(15 23 42 / 0.92);
-  color: #bae6fd;
-  font-weight: 800;
+  background: rgb(44 44 46 / 0.82);
+  color: rgb(255 255 255 / 0.72);
+  font-weight: 650;
+}
+
+.mhl-time-cell.is-current-hour {
+  background: rgb(10 132 255 / 0.22);
+  color: #ffffff;
 }
 
 .mhl-day-cell {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  background: linear-gradient(180deg, rgb(12 74 110 / 0.95), rgb(8 47 73 / 0.94));
+  background: rgb(58 58 60 / 0.9);
   min-width: 0;
   padding: 0 7px;
-  color: #ecfeff;
+  color: rgb(255 255 255 / 0.78);
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .mhl-day-group {
   justify-content: flex-start;
-  border-right-color: rgb(125 211 252 / 0.32);
-  box-shadow: inset 0 -1px 0 rgb(125 211 252 / 0.16);
+  border-right-color: rgb(255 255 255 / 0.13);
+  box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.04);
 }
 
 .mhl-now-marker {
@@ -346,15 +446,25 @@ body {
   top: 2px;
   transform: translateX(-50%);
   border-radius: 4px;
-  background: rgb(250 204 21 / 0.16);
+  background: #0a84ff;
   padding: 0 4px;
-  color: #fde68a;
+  color: #ffffff;
   font-size: 8px;
   font-weight: 900;
   line-height: 14px;
   pointer-events: none;
-  text-shadow: 0 1px 3px rgb(2 6 23 / 0.72);
+  box-shadow: 0 2px 6px rgb(10 132 255 / 0.28);
   white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .mhl-observation-metric:nth-child(2) {
+    border-right: 0;
+  }
+
+  .mhl-observation-metric:nth-child(-n + 2) {
+    border-bottom: 1px solid rgb(255 255 255 / 0.075);
+  }
 }
 
 .mhl-time-cell small {
@@ -367,15 +477,15 @@ body {
 .mhl-arrow-cell {
   display: grid;
   place-items: center;
-  background: rgb(15 23 42 / 0.72);
-  color: #fef3c7;
+  background: rgb(44 44 46 / 0.56);
+  color: #ffd60a;
   font-size: 17px;
   font-weight: 900;
 }
 
 .mhl-arrow-cell.is-wave {
-  background: rgb(8 47 73 / 0.64);
-  color: #fde68a;
+  background: rgb(44 44 46 / 0.72);
+  color: #64d2ff;
 }
 
 .mhl-arrow-cell span {
@@ -397,17 +507,19 @@ body {
 .mhl-wave-cell {
   display: grid;
   place-items: center;
-  color: #0f172a;
+  color: rgb(255 255 255 / 0.88);
   font-size: 9px;
   font-weight: 800;
 }
 
 .mhl-wind-cell {
-  background: linear-gradient(180deg, #ccfbf1, #5eead4);
+  background: rgb(48 209 88 / 0.16);
+  color: #a8f0ba;
 }
 
 .mhl-temp-cell {
-  background: linear-gradient(180deg, #fef3c7, #fbbf24);
+  background: rgb(255 159 10 / 0.16);
+  color: #ffd28a;
 }
 
 .mhl-tide-cell {
@@ -424,6 +536,19 @@ body {
   color: #dbeafe;
   font-size: 9px;
   font-weight: 800;
+}
+
+.mhl-wave-height-cell {
+  background: rgb(10 132 255 / 0.14);
+  color: #9ed1ff;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.mhl-wave-height-cell.is-alert {
+  background: rgb(255 69 58 / 0.18);
+  color: #ffb3ad;
+  font-weight: 750;
 }
 
 

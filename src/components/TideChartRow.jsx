@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { estimateTideExtrema } from "../utils/tideExtrema.js";
 
-export default function TideChartRow({ label, values }) {
+export default function TideChartRow({ label, values, currentTime }) {
     const height = 74;
     const cellWidth = 44;
     const totalWidth = values.length * cellWidth;
@@ -26,6 +26,15 @@ export default function TideChartRow({ label, values }) {
 
     // Y-coordinate of the 0 tick mark (MSL)
     const zeroY = height - padding - ((0 - minLevel) / range) * (height - 2 * padding);
+    const currentX = useMemo(() => {
+        if (!(currentTime instanceof Date) || !points.length) return null;
+        const firstTime = points[0].time?.getTime();
+        const lastTime = points.at(-1).time?.getTime();
+        const timeRange = lastTime - firstTime;
+        if (!(timeRange > 0)) return null;
+        const ratio = (currentTime.getTime() - firstTime) / timeRange;
+        return cellWidth / 2 + ratio * Math.max(0, totalWidth - cellWidth);
+    }, [currentTime, points, cellWidth, totalWidth]);
 
     // Calculate the smooth curve path
     const pathD = useMemo(() => {
@@ -78,16 +87,20 @@ export default function TideChartRow({ label, values }) {
                 <svg width={totalWidth} height={height} className="absolute left-0 top-0 overflow-visible">
                     <defs>
                         <linearGradient id="tide-gradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.35" />
-                            <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
+                            <stop offset="0%" stopColor="#64d2ff" stopOpacity="0.28" />
+                            <stop offset="100%" stopColor="#0a84ff" stopOpacity="0.0" />
                         </linearGradient>
                     </defs>
 
                     <line x1="0" y1={zeroY} x2={totalWidth} y2={zeroY} stroke="#64748b" strokeDasharray="3 3" strokeOpacity="0.5" strokeWidth="1"/>
 
+                    {Number.isFinite(currentX) && (
+                        <line x1={currentX} y1="0" x2={currentX} y2={height} stroke="#0a84ff" strokeOpacity="0.72" strokeWidth="1"/>
+                    )}
+
                     <path d={areaD} fill="url(#tide-gradient)" />
 
-                    <path d={pathD} fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/>
+                    <path d={pathD} fill="none" stroke="#64d2ff" strokeWidth="2" strokeLinecap="round"/>
 
                     {peakPoints.map((pt, idx) => {
                         const isHigh = pt.kind === "high";
@@ -102,9 +115,9 @@ export default function TideChartRow({ label, values }) {
 
                         return (
                             <g key={idx}>
-                                <circle cx={pt.x} cy={pt.y} r="3.5" fill="#38bdf8" stroke="#0f172a" strokeWidth="1.5" />
+                                <circle cx={pt.x} cy={pt.y} r="3.5" fill="#64d2ff" stroke="#1c1c1e" strokeWidth="1.5" />
 
-                                <rect x={pt.x - 30} y={textY - 9} width="60" height="14" rx="4" fill="#0f172a" fillOpacity="0.75" stroke="#38bdf8" strokeOpacity="0.3" strokeWidth="0.8"/>
+                                <rect x={pt.x - 30} y={textY - 9} width="60" height="14" rx="4" fill="#2c2c2e" fillOpacity="0.94" stroke="#ffffff" strokeOpacity="0.1" strokeWidth="0.8"/>
 
                                 <text x={pt.x} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-sky-100 text-[9px] font-semibold tracking-tight">
                                     {labelText}

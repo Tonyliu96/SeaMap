@@ -49,26 +49,32 @@ export default function MarineMap({
     zoom: 12
   });
   const [lidarCoverage, setLidarCoverage] = useState(null);
-  const [lidarStatus, setLidarStatus] = useState("loading");
+  const [lidarStatus, setLidarStatus] = useState("idle");
 
   useEffect(() => {
-    let mounted = true;
+    if (!lidarEnabled || selectedRegion !== "NSW" || lidarCoverage) return undefined;
 
-    loadNswLidarCoverage()
+    const controller = new AbortController();
+    let mounted = true;
+    setLidarStatus("loading");
+
+    loadNswLidarCoverage({ signal: controller.signal })
       .then((data) => {
         if (!mounted) return;
         setLidarCoverage(data);
         setLidarStatus("ready");
       })
-      .catch(() => {
+      .catch((error) => {
         if (!mounted) return;
+        if (error?.name === "AbortError") return;
         setLidarStatus("error");
       });
 
     return () => {
       mounted = false;
+      controller.abort();
     };
-  }, []);
+  }, [lidarEnabled, selectedRegion, lidarCoverage]);
 
   const activeBase = baseLayers[baseMap] ?? baseLayers.streets;
 
@@ -142,9 +148,11 @@ export default function MarineMap({
         <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.lat")}</span><span>{cursor.lat.toFixed(5)}</span></div>
         <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.lng")}</span><span>{cursor.lng.toFixed(5)}</span></div>
         <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.zoom")}</span><span>{cursor.zoom}</span></div>
-        <div className="mt-1 max-w-[210px] truncate text-slate-400">{t("telemetry.lidar")}{" "}{lidarStatus === "ready"
-            ? `${lidarCoverage?.features?.length ?? 0} ${t("telemetry.polygons")}`
-            : lidarStatus}
+        <div className="mt-1 max-w-[210px] truncate text-slate-400">{t("telemetry.lidar")}{" "}{!lidarEnabled
+            ? t("telemetry.off")
+            : lidarStatus === "ready"
+              ? `${lidarCoverage?.features?.length ?? 0} ${t("telemetry.polygons")}`
+              : t(`telemetry.${lidarStatus}`)}
         </div>
       </div>
     </MapContainer>

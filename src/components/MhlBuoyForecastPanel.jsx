@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Waves, Wind, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Clock3, Navigation, Timer, Waves, Wind, X } from "lucide-react";
 import { fetchMhlBuoyForecast } from "../services/mhlWaves.js";
 import {formatMeters, formatSeconds, formatWindDirection, formatWindSpeed} from "../services/tides.js";
 import TideChartRow from "./TideChartRow.jsx";
@@ -13,15 +13,17 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
   const [status, setStatus] = useState("idle");
   const [forecast, setForecast] = useState(null);
   const [hourStep, setHourStep] = useState(1);
+  const forecastScrollerRef = useRef(null);
 
   useEffect(() => {
     if (!buoy) return undefined;
 
+    const controller = new AbortController();
     let mounted = true;
     setStatus("loading");
     setForecast(null);
 
-    fetchMhlBuoyForecast(buoy)
+    fetchMhlBuoyForecast(buoy, { signal: controller.signal })
       .then((data) => {
         if (!mounted) return;
         setForecast(data);
@@ -34,6 +36,7 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
 
     return () => {
       mounted = false;
+      controller.abort();
     };
   }, [buoy]);
 
@@ -43,47 +46,68 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
       .slice(0, VISIBLE_HOURS);
 
     if (hourStep === 3) {
-      return sourceHours.filter((_, index) => index % 3 === 0);
+      return sourceHours.filter((hour) => Number(formatHour(hour.time)) % 3 === 0);
     }
     return sourceHours;
   }, [forecast, hourStep]);
 
+  const currentTime = useMemo(() => {
+    const index = findNearestHourIndex(hours, new Date(), formatDateKey(new Date()));
+    return index >= 0 ? hours[index].time : null;
+  }, [hours]);
+
+  const scrollForecast = (direction) => {
+    forecastScrollerRef.current?.scrollBy({
+      left: direction * Math.max(264, forecastScrollerRef.current.clientWidth * 0.72),
+      behavior: "smooth"
+    });
+  };
+
   if (!buoy) return null;
 
   return (
-    <section className="absolute bottom-3 left-3 right-3 z-[700] max-h-[32dvh] overflow-hidden rounded-lg border border-cyan-300/20 bg-slate-950/[0.92] text-slate-100 shadow-[0_-20px_70px_rgba(2,6,23,0.42)] backdrop-blur-xl md:left-4 md:right-4">
-      <div className="flex items-start justify-between gap-3 border-b border-cyan-300/[0.15] bg-gradient-to-r from-slate-950 via-sky-950/[0.88] to-slate-950 px-3 py-2">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md border border-cyan-300/20 bg-cyan-400/10 text-cyan-200">
-            <Waves size={16} />
+    <section className="mhl-panel absolute bottom-[76px] left-3 right-3 z-[700] h-[min(360px,42dvh)] min-h-[250px] overflow-hidden rounded-lg text-white md:bottom-4 md:left-4 md:right-4 md:h-[min(340px,32dvh)]">
+      <header className="mhl-panel-header flex items-center justify-between gap-3 px-3.5 py-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="mhl-station-symbol grid h-9 w-9 shrink-0 place-items-center rounded-lg">
+            <Waves size={17} />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-cyan-300/90">
-            {t("mhl.panelTitle")}
-            </p>
-            <h2 className="truncate text-sm font-semibold text-slate-50">
+            <div className="flex min-w-0 items-center gap-2">
+              <h2 className="truncate text-[15px] font-semibold text-white">
               {buoy.name ?? buoy.sitecode}
-            </h2>
-            <p className="truncate text-[10px] text-slate-400">
-              <span className="font-semibold text-sky-200/90">{buoy.sitecode}</span>
-              <span className="px-1.5 text-slate-600">·</span>
-              {buoy.latitude.toFixed(4)}, {buoy.longitude.toFixed(4)}
+              </h2>
+              <span className="mhl-station-code hidden rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase sm:inline">
+                {buoy.sitecode}
+              </span>
+            </div>
+            <p className="truncate text-[10px] text-white/45">
+              {t("mhl.panelTitle")} · {buoy.latitude.toFixed(4)}, {buoy.longitude.toFixed(4)}
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/10 bg-white/5 text-slate-300 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-white"
-          onClick={onClose}
-          aria-label={t("mhl.closePanel")}>
-          <X size={16} />
-        </button>
-      </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="mhl-live-status hidden items-center gap-1.5 text-[10px] font-medium sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#30d158]" /> MHL observed
+          </span>
+          <button
+            type="button"
+            className="mhl-icon-button"
+            onClick={onClose}
+            title={t("mhl.closePanel")}
+            aria-label={t("mhl.closePanel")}>
+            <X size={15} />
+          </button>
+        </div>
+      </header>
 
-      <div className="marine-scrollbar max-h-[calc(32dvh-54px)] overflow-y-auto p-2">
+      <div className="marine-scrollbar h-[calc(100%-53px)] overflow-y-auto px-2 pb-2 pt-1.5">
         {status === "loading" && (
-          <div className="rounded-md border border-white/10 bg-white/5 px-3 py-4 text-sm text-slate-300">
-            {t("mhl.forecastLoading")}
+          <div className="grid h-full min-h-40 place-items-center">
+            <div className="flex items-center gap-2 text-xs text-white/60">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-[#0a84ff]" />
+              {t("mhl.forecastLoading")}
+            </div>
           </div>
         )}
 
@@ -95,32 +119,36 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
 
         {status === "ready" && (
           <>
-            <CurrentObservation latest={forecast?.latest} hourStep={hourStep} setHourStep={setHourStep} t={t}/>
+            <CurrentObservation latest={forecast?.latest} t={t}/>
+            <ForecastToolbar
+              hourStep={hourStep}
+              setHourStep={setHourStep}
+              onScroll={scrollForecast}
+              t={t}/>
 
-            <div className="marine-scrollbar mt-2.5 overflow-x-auto rounded-md border border-white/10 bg-slate-950/[0.45]">
+            <div ref={forecastScrollerRef} className="mhl-forecast-scroll marine-scrollbar overflow-x-auto rounded-lg">
               <div
                 className="mhl-forecast-grid min-w-max"
                 style={{ gridTemplateColumns: `68px repeat(${hours.length}, 44px)` }}>
                 <DayRow hours={hours} t={t} />
-                <HeaderRow hours={hours} t={t} />
-                <ArrowRow label={t("mhl.wind")} values={hours} field="windDirection" />
-                <ValueRow label="km/h" values={hours} field="windSpeed" formatter={(value) => formatNumber(value, 0)} colorClass="mhl-wind-cell" />
-                <ValueRow label={t("mhl.temperature")} values={hours} field="temperature" formatter={(value) => formatNumber(value, 0)} colorClass="mhl-temp-cell" />
-                <ArrowRow label={t("mhl.swell")} values={hours} field="waveDirection" strong />
-                {/*<DualValueRow label="m / s" values={hours} />*/}
+                <HeaderRow hours={hours} currentTime={currentTime} t={t} />
+                <ArrowRow label={t("mhl.wind")} values={hours} field="windDirection" currentTime={currentTime} />
+                <ValueRow label="km/h" values={hours} field="windSpeed" currentTime={currentTime} formatter={(value) => formatNumber(value, 0)} colorClass="mhl-wind-cell" />
+                <ValueRow label={t("mhl.temperature")} values={hours} field="temperature" currentTime={currentTime} formatter={(value) => formatNumber(value, 0)} colorClass="mhl-temp-cell" />
+                <ArrowRow label={t("mhl.swell")} values={hours} field="waveDirection" currentTime={currentTime} strong />
                 <ValueRow icon={Waves} label={t("mhl.waveHeight") ?? "Wave"} values={hours} field="waveHeight"
+                    currentTime={currentTime}
                     formatter={(value) => formatNumber(value, 1)}
                     colorClass="mhl-grid-cell font-semibold text-cyan-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] bg-sky-950/50"/>
 
                 <ValueRow label={t("mhl.wavePeriod") ?? "Wave period"} values={hours} field="wavePeriod"
+                    currentTime={currentTime}
                     formatter={(value) => formatNumber(value, 0)}
                     colorClass="mhl-grid-cell text-slate-300 bg-slate-900/40"/>
-
-                {/*<ValueRow label={t("mhl.tideMsl")} values={hours} field="seaLevel" formatter={(value) => formatNumber(value, 2)} colorClass="mhl-tide-cell" />*/}
-                <TideChartRow label={t("mhl.tideMsl")} values={hours} />
+                <TideChartRow label={t("mhl.tideMsl")} values={hours} currentTime={currentTime} />
               </div>
             </div>
-            <p className="mt-1.5 text-[10px] leading-3 text-slate-500">
+            <p className="px-1 pt-1 text-[9px] leading-3 text-white/30">
               {t("mhl.disclaimer")}
             </p>
           </>
@@ -184,48 +212,70 @@ function findNearestHourIndex(hours, now, todayKey) {
 }
 
 
-function CurrentObservation({ latest, hourStep, setHourStep, t }) {
+function CurrentObservation({ latest, t }) {
   return (
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Metric title={t("mhl.latestWaveHeight")} value={formatMeters(latest?.waveHeight, t)} />
-        <Metric title={t("mhl.latestWavePeriod")} value={formatSeconds(latest?.wavePeriod, t)} />
-        <Metric title={t("mhl.latestWaveDirection")} value={formatWindDirection(latest?.waveDirection, t)} />
-        <Metric title={t("mhl.observedAt")} value={formatObservedAt(latest?.observedAt, t)} />
+      <div className="mhl-observation-strip grid grid-cols-2 overflow-hidden rounded-lg sm:grid-cols-4">
+        <Metric icon={Waves} title={t("mhl.latestWaveHeight")} value={formatMeters(latest?.waveHeight, t)} />
+        <Metric icon={Timer} title={t("mhl.latestWavePeriod")} value={formatSeconds(latest?.wavePeriod, t)} />
+        <Metric icon={Navigation} title={t("mhl.latestWaveDirection")} value={formatWindDirection(latest?.waveDirection, t)} />
+        <Metric icon={Clock3} title={t("mhl.observedAt")} value={formatObservedAt(latest?.observedAt, t)} />
+      </div>
+  );
+}
 
-        <div className="ml-auto flex items-center overflow-hidden rounded-md border border-cyan-300/[0.15] bg-slate-900/80 p-0.5">
-          {[1, 3].map((step) => (
-              <button
-                  key={step}
-                  type="button"
-                  className={`h-6 min-w-8 rounded px-2 text-[10px] font-semibold transition ${
-                      hourStep === step
-                          ? "bg-cyan-300 text-slate-950"
-                          : "text-slate-300 hover:bg-white/10 hover:text-white"
-                  }`}
-                  onClick={() => setHourStep(step)}>
-                {step}h
-              </button>
-          ))}
+function Metric({ icon: Icon, title, value }) {
+  return (
+      <div className="mhl-observation-metric flex min-w-0 items-center gap-2 px-2.5 py-1.5">
+        <Icon size={14} className="mhl-metric-icon shrink-0" />
+        <div className="min-w-0">
+          <p className="truncate text-[8px] font-medium uppercase text-white/35">{title}</p>
+          <p className="truncate text-[12px] font-semibold tabular-nums text-white/95">{value}</p>
         </div>
       </div>
   );
 }
 
-function Metric({ title, value }) {
+function ForecastToolbar({ hourStep, setHourStep, onScroll, t }) {
   return (
-      <div className="min-w-[138px] rounded-md border border-cyan-300/[0.15] bg-slate-900/[0.78] px-2 py-1">
-        <p className="truncate text-[9px] uppercase tracking-wider text-cyan-200/90">{title}</p>
-        <p className="mt-0.5 truncate text-[11px] font-semibold text-white">{value}</p>
+    <div className="flex h-8 items-center justify-between gap-2 px-1">
+      <div className="flex items-center gap-2 text-[9px] font-semibold uppercase text-white/40">
+        <span>{t("mhl.modelForecast")}</span>
+        <span className="h-1 w-1 rounded-full bg-white/20" />
+        <span className="normal-case text-white/30">Open-Meteo</span>
       </div>
+      <div className="flex items-center gap-1.5">
+        <div className="mhl-segmented-control flex items-center rounded-md p-0.5">
+          {[1, 3].map((step) => (
+            <button
+              key={step}
+              type="button"
+              className={`h-5 min-w-8 rounded px-1.5 text-[9px] font-bold transition ${
+                hourStep === step
+                  ? "is-selected"
+                  : "text-white/45 hover:text-white/80"
+              }`}
+              onClick={() => setHourStep(step)}>
+              {step}h
+            </button>
+          ))}
+        </div>
+        <button type="button" className="mhl-icon-button h-6 w-6" onClick={() => onScroll(-1)} title={t("mhl.scrollEarlier")} aria-label={t("mhl.scrollEarlier")}>
+          <ChevronLeft size={14} />
+        </button>
+        <button type="button" className="mhl-icon-button h-6 w-6" onClick={() => onScroll(1)} title={t("mhl.scrollLater")} aria-label={t("mhl.scrollLater")}>
+          <ChevronRight size={14} />
+        </button>
+      </div>
+    </div>
   );
 }
 
-function HeaderRow({hours, t}) {
+function HeaderRow({hours, currentTime, t}) {
   return (
       <>
-        <div className="mhl-grid-label sticky left-0 z-20 bg-slate-900/95">{t("mhl.time")}</div>
+        <div className="mhl-grid-label sticky left-0 z-20">{t("mhl.time")}</div>
         {hours.map((hour) => (
-            <div key={`time-${hour.time.toISOString()}`} className="mhl-time-cell">
+            <div key={`time-${hour.time.toISOString()}`} className={`mhl-time-cell ${currentHourClass(hour.time, currentTime)}`}>
               <span>{formatHour(hour.time)}</span>
             </div>
         ))}
@@ -233,16 +283,16 @@ function HeaderRow({hours, t}) {
   );
 }
 
-function ArrowRow({label, values, field, strong = false}) {
+function ArrowRow({label, values, field, currentTime, strong = false}) {
   return (
       <>
-        <div className="mhl-grid-label sticky left-0 z-20 flex items-center gap-1 bg-slate-900/95 px-2">
-          {field === "windDirection" ? <Wind size={13} className="text-cyan-400"/> : null}
+        <div className="mhl-grid-label sticky left-0 z-20 flex items-center gap-1 px-2">
+          {field === "windDirection" ? <Wind size={13} className="text-[#64d2ff]"/> : null}
           <span>{label}</span>
         </div>
         {values.map((hour) => (
             <div key={`${field}-${hour.time.toISOString()}`}
-                 className={strong ? "mhl-arrow-cell is-wave" : "mhl-arrow-cell"}>
+                 className={`${strong ? "mhl-arrow-cell is-wave" : "mhl-arrow-cell"} ${currentHourClass(hour.time, currentTime)}`}>
               {Number.isFinite(hour[field]) ? (
                   <span style={{transform: `rotate(${arrowBearing(hour[field], field)}deg)` }}>&#8593;</span>
           ) : (
@@ -260,11 +310,11 @@ function arrowBearing(direction, field) {
     : direction;
 }
 
-function ValueRow({ icon: Icon, label, values, field, formatter, colorClass }) {
+function ValueRow({ icon: Icon, label, values, field, currentTime, formatter, colorClass }) {
   return (
       <>
-        <div className="mhl-grid-label sticky left-0 z-20 flex items-center gap-1.5 bg-slate-900/95 px-2 text-xs text-slate-300">
-          {Icon && <Icon size={13} className="shrink-0 text-cyan-400" />}
+        <div className="mhl-grid-label sticky left-0 z-20 flex items-center gap-1.5 px-2 text-xs">
+          {Icon && <Icon size={13} className="shrink-0 text-[#64d2ff]" />}
           <span className="truncate">{label}</span>
         </div>
 
@@ -277,16 +327,20 @@ function ValueRow({ icon: Icon, label, values, field, formatter, colorClass }) {
               ? Number(val.toFixed(1))
               : null;
             dynamicColor = displayedWaveHeight >= 1.5
-                ? "font-bold text-rose-200 bg-rose-950/60 drop-shadow"
-                : "font-semibold text-sky-200 bg-sky-950/30";
+                ? "mhl-wave-height-cell is-alert"
+                : "mhl-wave-height-cell";
           }
 
           return (
-              <div key={`${field}-${hour.time.toISOString()}`} className={`flex items-center justify-center text-xs ${dynamicColor}`}>
+              <div key={`${field}-${hour.time.toISOString()}`} className={`flex items-center justify-center text-xs ${dynamicColor} ${currentHourClass(hour.time, currentTime)}`}>
                 {formatter ? formatter(val) : val}
               </div>
           );
         })}
       </>
   );
+}
+
+function currentHourClass(time, currentTime) {
+  return currentTime && time.getTime() === currentTime.getTime() ? "is-current-hour" : "";
 }

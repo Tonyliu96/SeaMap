@@ -5,6 +5,8 @@ const USERNAME = "publicwww";
 const MAX_NEAREST_BUOY_KM = 180;
 const TIMEZONE = "Australia/Sydney";
 const FORECAST_DAYS = "4";
+const FORECAST_CACHE_TTL_MS = 10 * 60 * 1000;
+const LATEST_CACHE_TTL_MS = 5 * 60 * 1000;
 
 const WAVE_BUOY_CODES = [
   "BYRBOW",
@@ -17,6 +19,8 @@ const WAVE_BUOY_CODES = [
 ];
 
 let cachedBuoys = null;
+const forecastCache = new Map();
+const latestCache = new Map();
 
 export async function fetchMhlWaveInfo({ lat, lng }) {
   const buoys = await fetchWaveBuoys();
@@ -58,18 +62,28 @@ export async function fetchMhlBuoySnapshots() {
   );
 }
 
-export async function fetchMhlBuoyForecast(buoy) {
+export async function fetchMhlBuoyForecast(buoy, { signal } = {}) {
+  const cached = forecastCache.get(buoy.sitecode);
+  if (cached && Date.now() - cached.savedAt < FORECAST_CACHE_TTL_MS) {
+    return cached.value;
+  }
+
   const [latest, weather, marine] = await Promise.all([
-    fetchMhlBuoyLatest(buoy.sitecode).catch(() => ({})),
-    fetchOpenMeteoHourly(buoy.latitude, buoy.longitude),
-    fetchOpenMeteoMarineHourly(buoy.latitude, buoy.longitude)
+    fetchMhlBuoyLatest(buoy.sitecode, { signal }).catch((error) => {
+      if (error?.name === "AbortError") throw error;
+      return {};
+    }),
+    fetchOpenMeteoHourly(buoy.latitude, buoy.longitude, signal),
+    fetchOpenMeteoMarineHourly(buoy.latitude, buoy.longitude, signal)
   ]);
 
-  return {
+  const value = {
     buoy,
     latest,
     hours: combineHourlyForecasts(weather.hourly, marine.hourly).slice(0, 96)
   };
+  forecastCache.set(buoy.sitecode, { savedAt: Date.now(), value });
+  return value;
 }
 
 export async function fetchWaveBuoys() {
@@ -105,14 +119,19 @@ export async function fetchWaveBuoys() {
   return cachedBuoys;
 }
 
-export async function fetchMhlBuoyLatest(sitecode) {
-  const latest = await fetchLatestReadings(sitecode);
+export async function fetchMhlBuoyLatest(sitecode, { signal } = {}) {
+  const cached = latestCache.get(sitecode);
+  if (cached && Date.now() - cached.savedAt < LATEST_CACHE_TTL_MS) {
+    return cached.value;
+  }
+
+  const latest = await fetchLatestReadings(sitecode, signal);
   const waveHeight = findLatestValue(latest, "Wave Height");
   const wavePeriod = findLatestValue(latest, "Wave Period");
   const waveDirection = findLatestValue(latest, "Wave Direction");
   const seaTemperature = findLatestValue(latest, "Sea Temperature");
 
-  return {
+  const value = {
     waveHeight: waveHeight?.value ?? null,
     wavePeriod: wavePeriod?.value ?? null,
     waveDirection: waveDirection?.value ?? null,
@@ -124,15 +143,17 @@ export async function fetchMhlBuoyLatest(sitecode) {
       seaTemperature?.timestamp ??
       null
   };
+  latestCache.set(sitecode, { savedAt: Date.now(), value });
+  return value;
 }
 
-async function fetchLatestReadings(sitecode) {
+async function fetchLatestReadings(sitecode, signal) {
   const params = new URLSearchParams({
     page: "latest-readings",
     sitecode,
     username: USERNAME
   });
-  return fetchJson(params);
+  return fetchJson(params, signal);
 }
 
 async function fetchOpenMeteoCurrent(lat, lng) {
@@ -155,7 +176,7 @@ async function fetchOpenMeteoCurrent(lat, lng) {
   };
 }
 
-async function fetchOpenMeteoHourly(lat, lng) {
+async function fetchOpenMeteoHourly(lat, lng, signal) {
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lng),
@@ -166,12 +187,12 @@ async function fetchOpenMeteoHourly(lat, lng) {
     timeformat: "unixtime",
     cell_selection: "sea"
   });
-  const response = await fetch(`${FORECAST_API}?${params}`);
+  const response = await fetch(`${FORECAST_API}?${params}`, { signal });
   if (!response.ok) throw new Error("Unable to fetch buoy weather forecast");
   return response.json();
 }
 
-async function fetchOpenMeteoMarineHourly(lat, lng) {
+async function fetchOpenMeteoMarineHourly(lat, lng, signal) {
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lng),
@@ -181,13 +202,13 @@ async function fetchOpenMeteoMarineHourly(lat, lng) {
     timeformat: "unixtime",
     cell_selection: "sea"
   });
-  const response = await fetch(`${MARINE_API}?${params}`);
+  const response = await fetch(`${MARINE_API}?${params}`, { signal });
   if (!response.ok) throw new Error("Unable to fetch buoy marine forecast");
   return response.json();
 }
 
-async function fetchJson(params) {
-  const response = await fetch(`${API_URL}?${params}`);
+async function fetchJson(params, signal) {
+  const response = await fetch(`${API_URL}?${params}`, { signal });
   if (!response.ok) throw new Error(`MHL wave request failed: ${response.status}`);
   return response.json();
 }
