@@ -1,6 +1,7 @@
-# Australian Marine Bathymetry Web App
+# SeaMap – Australian Marine Mapping and Forecasts
 
-A modern React, Tailwind CSS and Leaflet web map for visualising Australian marine bathymetry, NSW coastal LiDAR coverage, marine protected areas, and tide / marine conditions.
+A responsive React and Leaflet web application for Australian bathymetry,
+marine protected areas, coastal LiDAR, tides, wave observations and marine forecasts.
 
 Vercel website address: https://sea-map.vercel.app/
 
@@ -40,8 +41,8 @@ Vercel website address: https://sea-map.vercel.app/
 - Street / terrain and high-resolution satellite base maps.
 - NSW SEED bathymetry layers:
   - Isobaths at 5m depth intervals
-  - Slope - degrees
   - Bathymetry DEM - metres
+- AHO ENC Online depth soundings.
 - AusSeabed national bathymetry raster for non-NSW regions.
 - CAPAD marine protected areas by Australian state / territory.
 - Marine protected area click query with fishing restriction summary.
@@ -56,6 +57,12 @@ Vercel website address: https://sea-map.vercel.app/
   - Wind direction
 - Right-click or long-press the map to query tide / marine conditions for a selected location.
 - Responsive glass-style control panel for desktop and mobile.
+- Marine Outlook with nationwide coastal location search.
+- One-hour and three-hour forecast intervals.
+- Hourly wind, swell, wave, water temperature and pressure data.
+- Seven official NSW wave buoy markers and detailed forecast panel.
+- English, Chinese and system-language modes.
+- Current-time indicator in hourly forecast tables.
 
 ## Tech Stack
 
@@ -79,6 +86,8 @@ This project uses public data and map services:
 - Open-Meteo Marine Weather API
 - Open-Meteo Weather Forecast API
 - Manly Hydraulics Laboratory NSW Ocean Wave Data Collection Program for latest NSW wave buoy observations
+- Australian Hydrographic Office ENC Online / AHO Chart Explorer
+- Tides4Fishing / Nautide marine forecast data (unofficial integration)
 
 Tide values are modelled and may be inaccurate nearshore or inside harbours. They are provided for visual context only and must not be used for navigation or safety-critical decisions.
 
@@ -94,7 +103,9 @@ When MHL observations are unavailable or the selected location is too far from a
 npm install
 ```
 
-## Run Locally
+## Run Frontend Only
+
+This starts the frontend only. Marine Outlook requires the FastAPI backend described below.
 
 ```bash
 npm start
@@ -145,4 +156,48 @@ The app currently uses `public/data/nsw-lidar-coverage.geojson`, which is about 
 
 ## Attribution
 
-Keep map and data attribution visible when deploying the app. Review the terms of use for OpenStreetMap, Esri, NSW SEED, AusSeabed, CAPAD, Open-Meteo, and MHL before public production deployment.
+Keep map and data attribution visible when deploying the app. Review the terms of use for OpenStreetMap, Esri, NSW SEED, AusSeabed, CAPAD, Open-Meteo, MHL, the Australian Hydrographic Office, and the Marine Outlook upstream provider.
+
+AHO chart content and all forecast information must not be used for navigation.
+
+
+
+## Marine Outlook
+
+The optional **Marine Outlook** layer adds a verified nationwide
+location registry, map markers, nearby-station selection, and an hourly marine
+forecast table. Its state filter defaults to **All Australia**, so a state does
+not need to be selected before searching. Searches with two or more characters
+also use the public Tides4Fishing sitemap to discover matching Australian
+locations, then validate a bounded number of pages and extract their real
+coordinates on demand.
+
+The browser only calls local `/api/marine/*` endpoints. A small FastAPI service
+fetches the selected allow-listed Tides4Fishing page, extracts its current
+Nautide request parameters, normalizes the response, and caches it. Station
+codes, cache keys, and arbitrary upstream URLs are never accepted from the
+browser.
+
+This is an unofficial integration with a third-party public service. Confirm
+the provider's current terms and obtain any required permission before public
+or commercial deployment. It does not bypass access controls and must not be
+used for navigation or as a guarantee of coastal safety.
+
+## Local full-stack development
+
+Use two terminals:
+
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn api.index:app --reload --port 8000
+```
+
+```bash
+npm install
+npm run dev
+```
+
+
+

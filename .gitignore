@@ -4,4 +4,7 @@ dist/
 *.log
 .env
 .env.*
+.venv/
+__pycache__/
+*.pyc
 Marine_NSWCoastalLidarCoverage_20190827/

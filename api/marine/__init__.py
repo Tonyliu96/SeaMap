@@ -1,0 +1,1 @@
+"""Australian marine forecast integration."""

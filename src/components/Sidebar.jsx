@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import {ChevronDown, ChevronsUpDown, ExternalLink, Layers, Map, RefreshCw, Satellite, ShieldCheck, SlidersHorizontal, SquareStack, Waves} from "lucide-react";
+import {ChevronsUpDown, ExternalLink, Layers, Map, Satellite, ShieldCheck, ShipWheel, SlidersHorizontal, SquareStack, X} from "lucide-react";
 import { australiaStates } from "../constants/australiaStates.js";
 import {loadNswLidarCatalog} from "../services/nswLidar.js";
 import {languageOptions} from "../constants/localization.js";
 import TideSection from "../components/TideSection.jsx";
+import MarineForecastSection from "./MarineForecastSection.jsx";
 
 const baseMaps = [
   { id: "streets", labelKey: "base.streets", icon: Map },
@@ -40,12 +41,20 @@ export default function Sidebar({
   tideStatus,
   tideError,
   tideCoordinate,
-  onRefreshTide
+  onRefreshTide,
+  marineForecastEnabled,
+  setMarineForecastEnabled,
+  marineForecastLocations,
+  setMarineForecastLocations,
+  selectedMarineLocation,
+  onSelectMarineLocation,
+  marineNearbyMessage
 }) {
   const [lidarCatalog, setLidarCatalog] = useState([]);
   const [catalogStatus, setCatalogStatus] = useState("loading");
   const [catalogOpen, setCatalogOpen] = useState(false);
   const isNswBathymetry = selectedRegion === "NSW";
+  const panelOpen = isOpen;
 
   useEffect(() => {
     let mounted = true;
@@ -67,17 +76,18 @@ export default function Sidebar({
 
   return (
       <>
-        <button type="button" aria-label={isOpen ? t("panel.collapse") : t("panel.expand")}
-            className="absolute left-4 top-4 z-[720] grid h-12 w-12 place-items-center rounded-lg border border-cyan-200/20 bg-slate-950/[0.82] text-slate-100 shadow-marine backdrop-blur-md transition hover:border-cyan-200/40 hover:bg-sky-950/[0.86] active:scale-95 md:left-6 md:top-10 md:h-11 md:w-11"
-            onClick={() => setIsOpen(!isOpen)}>
-          <div className="flex h-6 w-6 flex-col justify-between items-center py-0.5 md:h-5 md:w-5 md:py-0">
-            <span className="h-[2.5px] w-full rounded-full bg-current md:h-[2px]"/>
-            <span className={`w-4 rounded-[2px] bg-current transition-all duration-200 md:w-3.5 ${isOpen ? "h-2.5 md:h-2" : "h-1.5 opacity-60"}`}/>
-            <span className="h-[2.5px] w-full rounded-full bg-current md:h-[2px]"/>
-          </div>
-        </button>
+        {!panelOpen && <button type="button" aria-label={t("panel.expand")}
+            aria-expanded="false"
+            className={`group absolute z-[720] grid h-12 w-12 place-items-center rounded-lg border border-white/15 bg-slate-950/85 text-cyan-100 shadow-[0_16px_48px_rgba(2,6,23,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl transition duration-200 hover:border-cyan-200/45 hover:bg-slate-900/90 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${selectedMarineLocation
+              ? "left-3 top-3 md:left-4 md:top-4"
+              : "left-3 top-1/2 -translate-y-1/2 hover:left-4 md:left-4"
+            }`}
+            onClick={() => setIsOpen(true)}>
+          <Layers size={20} aria-hidden="true"/>
+          <span className="pointer-events-none absolute left-[calc(100%+8px)] whitespace-nowrap rounded-md border border-white/10 bg-slate-950/90 px-2.5 py-1.5 text-[10px] font-semibold text-slate-200 opacity-0 shadow-lg backdrop-blur-md transition group-hover:opacity-100">{t("layer.title")}</span>
+        </button>}
 
-        <aside className={`absolute z-[710] overflow-hidden border border-cyan-100/[0.15] bg-slate-950/[0.84] shadow-marine backdrop-blur-xl transition-all duration-300 ease-out md:bottom-4 md:left-6 md:top-24 md:w-[350px] md:rounded-lg ${isOpen
+          <aside className={`absolute z-[710] overflow-hidden border border-cyan-100/[0.15] bg-slate-950/[0.84] shadow-marine backdrop-blur-xl transition-all duration-300 ease-out md:bottom-4 md:left-5 md:top-5 md:w-[350px] md:rounded-lg ${panelOpen
                 ? "bottom-4 left-4 right-4 max-h-[calc(100dvh-7rem)] rounded-lg md:max-h-none md:translate-x-0"
                 : "bottom-0 left-0 right-0 max-h-[76px] rounded-t-lg md:max-h-none md:-translate-x-[370px]"}`}>
           <div className="flex items-center justify-between gap-3 border-b border-cyan-200/10 bg-gradient-to-r from-slate-950 via-sky-950/70 to-slate-950 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
@@ -92,14 +102,14 @@ export default function Sidebar({
                 </p>
               </div>
             </div>
-            <button type="button" aria-label={isOpen ? t("panel.collapse") : t("panel.expand")}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-slate-200 transition hover:bg-white/10 md:hidden"
-                onClick={() => setIsOpen(!isOpen)}>
-              <ChevronDown size={20} className={`transition ${isOpen ? "rotate-0" : "rotate-180"}`}/>
-            </button>
+            {panelOpen && <button type="button" aria-label={t("panel.collapse")}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-slate-300 transition hover:bg-white/10 hover:text-white active:scale-95"
+                onClick={() => setIsOpen(false)}>
+              <X size={17}/>
+            </button>}
           </div>
 
-          <div className={`marine-scrollbar max-h-[calc(100dvh-11rem)] space-y-5 overflow-y-auto overscroll-contain px-4 py-4 md:max-h-[calc(100dvh-11rem)] ${isOpen ? "block" : "hidden md:block"}`}>
+          <div className={`marine-scrollbar max-h-[calc(100dvh-11rem)] space-y-5 overflow-y-auto overscroll-contain px-4 py-4 md:max-h-[calc(100dvh-11rem)] ${panelOpen ? "block" : "hidden md:block"}`}>
             <Section title={t("language.section")} icon={SlidersHorizontal}>
               <label className="block rounded-md border border-white/10 bg-white/[0.045] p-3 transition focus-within:border-cyan-300/45">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
@@ -237,6 +247,18 @@ export default function Sidebar({
                       className="w-full accent-sky-400"/>
                 </div>
               </div>
+            </Section>
+
+            <Section title={t("section.marineForecast")} icon={ShipWheel}>
+              <MarineForecastSection
+                enabled={marineForecastEnabled}
+                setEnabled={setMarineForecastEnabled}
+                locations={marineForecastLocations}
+                setLocations={setMarineForecastLocations}
+                selectedLocation={selectedMarineLocation}
+                onSelectLocation={onSelectMarineLocation}
+                nearbyMessage={marineNearbyMessage}
+                t={t}/>
             </Section>
 
 

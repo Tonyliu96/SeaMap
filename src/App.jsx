@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "./components/Sidebar.jsx";
 import MhlBuoyForecastPanel from "./components/MhlBuoyForecastPanel.jsx";
+import MarineForecastPanel from "./components/MarineForecastPanel.jsx";
 import MarineMap from "./maps/MarineMap.jsx";
 import { fetchTideInfo } from "./services/tides.js";
+import { fetchNearbyMarineLocations } from "./services/marineForecast.js";
 import {
   createTranslator,
   getInitialLanguage,
@@ -27,6 +29,10 @@ export default function App() {
   const [tideStatus, setTideStatus] = useState("idle");
   const [tideError, setTideError] = useState("");
   const [selectedMhlBuoy, setSelectedMhlBuoy] = useState(null);
+  const [marineForecastEnabled, setMarineForecastEnabled] = useState(false);
+  const [marineForecastLocations, setMarineForecastLocations] = useState([]);
+  const [selectedMarineLocation, setSelectedMarineLocation] = useState(null);
+  const [marineNearbyMessage, setMarineNearbyMessage] = useState("");
   const [tideCoordinate, setTideCoordinate] = useState({
     lat: -33.8688,
     lng: 151.2093,
@@ -101,15 +107,61 @@ export default function App() {
     if (selectedRegion !== "NSW") setSelectedMhlBuoy(null);
   }, [selectedRegion]);
 
+  useEffect(() => {
+    if (!marineForecastEnabled) {
+      setSelectedMarineLocation(null);
+      setMarineNearbyMessage("");
+    }
+  }, [marineForecastEnabled]);
+
+  useEffect(() => {
+    if (selectedMarineLocation) setSidebarOpen(false);
+  }, [selectedMarineLocation]);
+
+  const selectNearestMarineLocation = useCallback(async ({ lat, lng }) => {
+    try {
+      const locations = await fetchNearbyMarineLocations({ lat, lon: lng, radiusKm: 150 });
+      if (!locations.length) {
+        setMarineNearbyMessage(t("marine.noNearby"));
+        return;
+      }
+      const nearest = locations[0];
+      setSelectedMarineLocation(nearest);
+      setSelectedMhlBuoy(null);
+      setMarineNearbyMessage(t("marine.nearestSelected", {
+        name: nearest.name,
+        distance: nearest.distanceKm?.toFixed(1) ?? "–"
+      }));
+    } catch {
+      setMarineNearbyMessage(t("marine.nearbyError"));
+    }
+  }, [t]);
+
+  const selectMarineLocation = useCallback((location) => {
+    setSelectedMarineLocation(location);
+    setSelectedMhlBuoy(null);
+    setSidebarOpen(false);
+  }, []);
+
+  const selectMhlBuoy = useCallback((buoy) => {
+    setSelectedMhlBuoy(buoy);
+    setSelectedMarineLocation(null);
+  }, []);
+
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-slate-950 text-white">
       <MarineMap
         {...mapState}
         selectedMhlBuoy={selectedMhlBuoy}
-        setSelectedMhlBuoy={setSelectedMhlBuoy}
+        setSelectedMhlBuoy={selectMhlBuoy}
         selectedTideInfo={selectedTideInfo}
         setSelectedTideInfo={setSelectedTideInfo}
         onTidePointQuery={queryPointTide}
+        marineForecastEnabled={marineForecastEnabled}
+        marineForecastLocations={marineForecastLocations}
+        selectedMarineLocation={selectedMarineLocation}
+        onSelectMarineLocation={selectMarineLocation}
+        onMarineMapPoint={selectNearestMarineLocation}
         t={t}/>
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[600] h-28 bg-gradient-to-b from-slate-950/[0.45] via-slate-950/[0.16] to-transparent" />
@@ -120,6 +172,17 @@ export default function App() {
         <MhlBuoyForecastPanel
           buoy={selectedMhlBuoy}
           onClose={() => setSelectedMhlBuoy(null)}
+          t={t}/>
+      )}
+
+      {marineForecastEnabled && selectedMarineLocation && (
+        <MarineForecastPanel
+          location={selectedMarineLocation}
+          onClose={() => {
+            setSelectedMarineLocation(null);
+            setSidebarOpen(false);
+          }}
+          language={language}
           t={t}/>
       )}
 
@@ -153,7 +216,14 @@ export default function App() {
         tideStatus={tideStatus}
         tideError={tideError}
         tideCoordinate={tideCoordinate}
-        onRefreshTide={refreshTide}/>
+        onRefreshTide={refreshTide}
+        marineForecastEnabled={marineForecastEnabled}
+        setMarineForecastEnabled={setMarineForecastEnabled}
+        marineForecastLocations={marineForecastLocations}
+        setMarineForecastLocations={setMarineForecastLocations}
+        selectedMarineLocation={selectedMarineLocation}
+        onSelectMarineLocation={selectMarineLocation}
+        marineNearbyMessage={marineNearbyMessage}/>
     </main>
   );
 }

@@ -6,6 +6,7 @@ import BathymetryDemLayer from "../layers/BathymetryDemLayer.jsx";
 import IsobathLayer from "../layers/IsobathLayer.jsx";
 import MarineProtectedAreasLayer from "../layers/MarineProtectedAreasLayer.jsx";
 import MhlWaveBuoyLayer from "../layers/MhlWaveBuoyLayer.jsx";
+import MarineForecastStationsLayer from "../layers/MarineForecastStationsLayer.jsx";
 import { loadNswLidarCoverage } from "../services/nswLidar.js";
 import { escapeHtml } from "../constants/localization.js";
 import {formatMeters, formatSeconds, formatTideTime, formatWindDirection, formatWindSpeed, groupThreeDayTideEvents} from "../services/tides.js";
@@ -41,6 +42,11 @@ export default function MarineMap({
   selectedTideInfo,
   setSelectedTideInfo,
   onTidePointQuery,
+  marineForecastEnabled,
+  marineForecastLocations,
+  selectedMarineLocation,
+  onSelectMarineLocation,
+  onMarineMapPoint,
   t
 }) {
   const [cursor, setCursor] = useState({
@@ -123,6 +129,14 @@ export default function MarineMap({
         enabled={selectedRegion === "NSW"}
         selectedBuoy={selectedMhlBuoy}
         onSelectBuoy={setSelectedMhlBuoy}
+        t={t}/>
+
+      <MarineForecastStationsLayer
+        enabled={marineForecastEnabled}
+        locations={marineForecastLocations}
+        selectedLocation={selectedMarineLocation}
+        onSelectLocation={onSelectMarineLocation}
+        onMapPoint={onMarineMapPoint}
         t={t}/>
 
       <Pane name="nsw-lidar-coverage" style={{ zIndex: 440 }}>
