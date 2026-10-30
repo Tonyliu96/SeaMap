@@ -3,7 +3,7 @@
 A responsive React and Leaflet web application for Australian bathymetry,
 marine protected areas, coastal LiDAR, tides, wave observations and marine forecasts.
 
-Vercel website address: https://sea-map.vercel.app/
+Vercel website address: https://seamapau.vercel.app/
 
 ## Screenshots
 
