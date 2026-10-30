@@ -54,31 +54,24 @@ export default function MhlWaveBuoyLayer({ enabled, selectedBuoy, onSelectBuoy, 
             eventHandlers={{
               click: () => onSelectBuoy?.(buoy)
             }}>
-            <Popup maxWidth={280}>
-              <div className="space-y-2 text-slate-900">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-700">
-                    {t("mhl.popupTitle")}
-                  </p>
-                  <p className="text-sm font-semibold">{buoy.name ?? buoy.sitecode}</p>
-                  <p className="text-xs text-slate-500">{buoy.sitecode}</p>
+            <Popup className="mhl-buoy-popup" maxWidth={260}>
+              <div className="min-w-[220px] font-sans text-ink-strong">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-primary">
+                      {t("mhl.popupTitle")}
+                    </p>
+                    <p className="truncate text-base font-bold text-ink-strong">{buoy.name ?? buoy.sitecode}</p>
+                  </div>
+                  <span className="rounded-full bg-steel/10 px-2 py-1 text-[10px] font-medium text-ink">{buoy.sitecode}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-700">
-                  <span>{t("tide.waveHeight")}</span>
-                  <strong>{formatMeters(buoy.waveHeight, t)}</strong>
-                  <span>{t("tide.wavePeriod")}</span>
-                  <strong>{formatSeconds(buoy.wavePeriod, t)}</strong>
-                  <span>{t("mhl.waveDirection")}</span>
-                  <strong>{formatWindDirection(buoy.waveDirection, t)}</strong>
-                  <span>{t("tide.windSpeed")}</span>
-                  <strong>{formatWindSpeed(buoy.windSpeed, t)}</strong>
-                  <span>{t("tide.windDirection")}</span>
-                  <strong>{formatWindDirection(buoy.windDirection, t)}</strong>
-                  <span>{t("mhl.windSource")}</span>
-                  <strong>{t("mhl.windModel")}</strong>
+                <div className="grid grid-cols-3 gap-2">
+                  <PopupMetric label={t("tide.waveHeight")} value={formatMeters(buoy.waveHeight, t)}/>
+                  <PopupMetric label={t("tide.wavePeriod")} value={formatSeconds(buoy.wavePeriod, t)}/>
+                  <PopupMetric label={t("mhl.waveDirection")} value={formatWindDirection(buoy.waveDirection, t)}/>
                 </div>
-                <p className="text-[11px] leading-4 text-slate-500">
-                  {t("mhl.clickHint")}
+                <p className="mt-3 text-[10px] text-steel">
+                  {t("mhl.observationSource")}
                 </p>
               </div>
             </Popup>
@@ -90,11 +83,20 @@ export default function MhlWaveBuoyLayer({ enabled, selectedBuoy, onSelectBuoy, 
         direction={wind.direction}
         speed={wind.speed}/>
       {status === "error" && (
-        <div className="pointer-events-none absolute right-4 top-24 z-[650] rounded-lg border border-rose-300/30 bg-slate-900/[0.85] px-3 py-2 text-xs text-rose-100 shadow-marine backdrop-blur-md">
+        <div className="pointer-events-none absolute right-4 top-24 z-[650] rounded-lg border border-coral/40 bg-surface px-3 py-2 text-xs text-[#8B4538] shadow-marine">
           {t("mhl.loadError")}
         </div>
       )}
     </>
+  );
+}
+
+function PopupMetric({ label, value }) {
+  return (
+    <div className="min-w-0 rounded-lg bg-aqua-soft/40 px-2 py-2 text-center">
+      <p className="truncate text-[10px] font-medium text-steel">{label}</p>
+      <p className="mt-0.5 truncate text-sm font-bold tabular-nums text-ink">{value}</p>
+    </div>
   );
 }
 
@@ -103,19 +105,31 @@ function buoyIcon(buoy, selected) {
     ? oppositeBearing(buoy.waveDirection)
     : 0;
   const height = Number.isFinite(buoy.waveHeight) ? buoy.waveHeight.toFixed(1) : "--";
+  const risk = waveRiskClass(buoy.waveHeight);
   return L.divIcon({
     className: "mhl-buoy-icon",
     html: `
-      <button type="button" class="mhl-buoy-button ${selected ? "is-selected" : ""}" aria-label="${buoy.name ?? buoy.sitecode}">
+      <button type="button" class="mhl-buoy-button ${risk} ${selected ? "is-selected" : ""}" aria-label="${buoy.name ?? buoy.sitecode}">
+        <span class="mhl-buoy-status" aria-hidden="true"></span>
+        <span class="mhl-buoy-copy">
+          <span class="mhl-buoy-code">${buoy.sitecode.replace("OW", "")}</span>
+          <span class="mhl-buoy-height">${height}m</span>
+        </span>
         <span class="mhl-buoy-arrow" style="transform: rotate(${rotation}deg)">&#8593;</span>
-        <span class="mhl-buoy-code">${buoy.sitecode.replace("OW", "")}</span>
-        <span class="mhl-buoy-height">${height}m</span>
       </button>
     `,
-    iconSize: [72, 72],
-    iconAnchor: [36, 36],
-    popupAnchor: [0, -44]
+    iconSize: [76, 38],
+    iconAnchor: [38, 19],
+    popupAnchor: [0, -26]
   });
+}
+
+function waveRiskClass(height) {
+  if (!Number.isFinite(height)) return "is-unknown";
+  if (height >= 2.5) return "is-danger";
+  if (height >= 1.5) return "is-warning";
+  if (height >= 1) return "is-caution";
+  return "is-calm";
 }
 
 function resolveParticleWind(buoys, selectedBuoy) {

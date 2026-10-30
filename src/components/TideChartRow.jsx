@@ -79,28 +79,28 @@ export default function TideChartRow({ label, values, currentTime }) {
 
     return (
         <>
-            <div className="mhl-grid-label sticky left-0 z-20 flex flex-col justify-center font-mono font-bold uppercase">
+            <div className="sticky left-0 z-20 flex flex-col justify-center bg-bg px-2 text-xs font-medium text-steel">
                 <span>{label}</span>
             </div>
 
-            <div className="relative bg-[#0b0d0f]" style={{ gridColumn: `span ${values.length}`, height: `${height}px` }}>
+            <div className="relative bg-bg dark:bg-white/[0.04]" style={{ gridColumn: `span ${values.length}`, height: `${height}px` }}>
                 <svg width={totalWidth} height={height} className="absolute left-0 top-0 overflow-visible">
                     <defs>
                         <linearGradient id="tide-gradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#6ee7f5" stopOpacity="0.24" />
-                            <stop offset="100%" stopColor="#3564f4" stopOpacity="0.02" />
+                            <stop offset="0%" stopColor="#80DED9" stopOpacity="0.35" />
+                            <stop offset="100%" stopColor="#AEECEF" stopOpacity="0.08" />
                         </linearGradient>
                     </defs>
 
-                    <line x1="0" y1={zeroY} x2={totalWidth} y2={zeroY} stroke="#59616b" strokeDasharray="3 3" strokeOpacity="0.65" strokeWidth="1"/>
+                    <line x1="0" y1={zeroY} x2={totalWidth} y2={zeroY} stroke="#6D9DC5" strokeDasharray="3 3" strokeOpacity="0.5" strokeWidth="1"/>
 
                     {Number.isFinite(currentX) && (
-                        <line x1={currentX} y1="0" x2={currentX} y2={height} stroke="#ffe100" strokeOpacity="0.9" strokeWidth="1"/>
+                        <line x1={currentX} y1="0" x2={currentX} y2={height} stroke="#068D9D" strokeOpacity="0.9" strokeWidth="1"/>
                     )}
 
                     <path d={areaD} fill="url(#tide-gradient)" />
 
-                    <path d={pathD} fill="none" stroke="#6ee7f5" strokeWidth="2"/>
+                    <path d={pathD} fill="none" stroke="#53599A" strokeWidth="2"/>
 
                     {peakPoints.map((pt, idx) => {
                         const isHigh = pt.kind === "high";

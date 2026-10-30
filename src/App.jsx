@@ -12,6 +12,7 @@ import {
 } from "./constants/localization.js";
 
 export default function App() {
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("seamap-theme") === "dark");
   const [language, setLanguage] = useState(getInitialLanguage);
   const [baseMap, setBaseMap] = useState("streets");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -40,6 +41,11 @@ export default function App() {
   });
 
   const t = useMemo(() => createTranslator(language), [language]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.setItem("seamap-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   const updateLanguage = useCallback((nextLanguage) => {
     setLanguage(nextLanguage);
@@ -149,24 +155,25 @@ export default function App() {
   }, []);
 
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-slate-950 text-white">
-      <MarineMap
-        {...mapState}
-        selectedMhlBuoy={selectedMhlBuoy}
-        setSelectedMhlBuoy={selectMhlBuoy}
-        selectedTideInfo={selectedTideInfo}
-        setSelectedTideInfo={setSelectedTideInfo}
-        onTidePointQuery={queryPointTide}
-        marineForecastEnabled={marineForecastEnabled}
-        marineForecastLocations={marineForecastLocations}
-        selectedMarineLocation={selectedMarineLocation}
-        onSelectMarineLocation={selectMarineLocation}
-        onMarineMapPoint={selectNearestMarineLocation}
-        t={t}/>
+    <main className="relative h-dvh w-full overflow-hidden bg-bg font-sans text-ink-strong transition-colors duration-200 dark:bg-dark-bg dark:text-dark-ink">
+      <div className="absolute inset-x-2 bottom-20 top-2 overflow-hidden rounded-2xl border border-aqua-soft shadow-marine md:inset-y-3 md:left-[88px] md:right-3">
+        <MarineMap
+          {...mapState}
+          selectedMhlBuoy={selectedMhlBuoy}
+          setSelectedMhlBuoy={selectMhlBuoy}
+          selectedTideInfo={selectedTideInfo}
+          setSelectedTideInfo={setSelectedTideInfo}
+          onTidePointQuery={queryPointTide}
+          marineForecastEnabled={marineForecastEnabled}
+          marineForecastLocations={marineForecastLocations}
+          selectedMarineLocation={selectedMarineLocation}
+          onSelectMarineLocation={selectMarineLocation}
+          onMarineMapPoint={selectNearestMarineLocation}
+          t={t}/>
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[600] h-28 bg-gradient-to-b from-slate-950/[0.45] via-slate-950/[0.16] to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[600] h-32 bg-gradient-to-t from-slate-950/[0.36] via-slate-950/[0.12] to-transparent" />
-      <div className="pointer-events-none absolute inset-0 z-[600] ring-1 ring-inset ring-white/[0.08]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[600] h-20 bg-gradient-to-b from-white/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-[600] ring-1 ring-inset ring-slate-900/[0.06]" />
+      </div>
 
       {selectedRegion === "NSW" && (
         <MhlBuoyForecastPanel
@@ -187,6 +194,8 @@ export default function App() {
       )}
 
       <Sidebar
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
         language={language}
         setLanguage={updateLanguage}
         t={t}
@@ -212,11 +221,6 @@ export default function App() {
         setMarineProtectedOpacity={setMarineProtectedOpacity}
         selectedRegion={selectedRegion}
         setSelectedRegion={setSelectedRegion}
-        tideInfo={tideInfo}
-        tideStatus={tideStatus}
-        tideError={tideError}
-        tideCoordinate={tideCoordinate}
-        onRefreshTide={refreshTide}
         marineForecastEnabled={marineForecastEnabled}
         setMarineForecastEnabled={setMarineForecastEnabled}
         marineForecastLocations={marineForecastLocations}

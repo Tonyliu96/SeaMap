@@ -4,10 +4,12 @@ import L from "leaflet";
 import {fetchIsobaths, getContourValue, getFeatureLabelCoordinate, getIsobathColor, getIsobathWeight} from "../constants/isobaths.js";
 
 const MIN_ISOBATH_ZOOM = 11;
+const MIN_LABEL_ZOOM = 14;
 
 export default function IsobathLayer({ enabled, opacity }) {
   const map = useMap();
   const [features, setFeatures] = useState(null);
+  const [zoom, setZoom] = useState(() => map.getZoom());
 
   const geoJsonRef = useRef(null);
   const queryKeyRef = useRef("");
@@ -58,7 +60,10 @@ export default function IsobathLayer({ enabled, opacity }) {
 
   useMapEvents({
     moveend: loadVisibleIsobaths,
-    zoomend: loadVisibleIsobaths
+    zoomend() {
+      setZoom(map.getZoom());
+      loadVisibleIsobaths();
+    }
   });
 
   useEffect(() => {
@@ -127,7 +132,7 @@ export default function IsobathLayer({ enabled, opacity }) {
             lineJoin: "round"
           };
         }}/>
-      {labels.map((label) => (
+      {zoom >= MIN_LABEL_ZOOM && labels.map((label) => (
         <Marker
           key={label.id}
           position={label.coordinate}

@@ -15,8 +15,9 @@ const baseLayers = {
   streets: {
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     maxNativeZoom: 19,
+    subdomains: "abc",
     attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      "&copy; OpenStreetMap contributors"
   },
   satellite: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -100,9 +101,11 @@ export default function MarineMap({
 
       <TileLayer
         key={baseMap}
+        className={baseMap === "streets" ? "soft-base-tile" : ""}
         url={activeBase.url}
         attribution={activeBase.attribution}
         maxNativeZoom={activeBase.maxNativeZoom}
+        subdomains={activeBase.subdomains ?? "abc"}
         maxZoom={28}/>
 
       <BathymetryDemLayer
@@ -158,11 +161,11 @@ export default function MarineMap({
         setSelectedTideInfo={setSelectedTideInfo}
         t={t}/>
 
-      <div className="absolute bottom-4 right-4 z-[650] rounded-lg border border-cyan-100/[0.14] bg-slate-950/[0.78] px-3 py-2 text-[11px] text-slate-200 shadow-marine backdrop-blur-md">
-        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.lat")}</span><span>{cursor.lat.toFixed(5)}</span></div>
-        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.lng")}</span><span>{cursor.lng.toFixed(5)}</span></div>
-        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-slate-400">{t("telemetry.zoom")}</span><span>{cursor.zoom}</span></div>
-        <div className="mt-1 max-w-[210px] truncate text-slate-400">{t("telemetry.lidar")}{" "}{!lidarEnabled
+      <div className="absolute bottom-4 right-4 z-[650] rounded-xl border border-aqua-soft/70 bg-surface/90 px-3 py-2 text-[11px] text-ink-strong shadow-marine backdrop-blur-md dark:border-white/10 dark:bg-dark-surface/90 dark:text-dark-ink">
+        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-steel">{t("telemetry.lat")}</span><span>{cursor.lat.toFixed(5)}</span></div>
+        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-steel">{t("telemetry.lng")}</span><span>{cursor.lng.toFixed(5)}</span></div>
+        <div className="grid grid-cols-[38px_1fr] gap-x-2 tabular-nums"><span className="text-steel">{t("telemetry.zoom")}</span><span>{cursor.zoom}</span></div>
+        <div className="mt-1 max-w-[210px] truncate text-steel">{t("telemetry.lidar")}{" "}{!lidarEnabled
             ? t("telemetry.off")
             : lidarStatus === "ready"
               ? `${lidarCoverage?.features?.length ?? 0} ${t("telemetry.polygons")}`
@@ -249,7 +252,7 @@ function SelectedTidePopup({ selectedTideInfo, setSelectedTideInfo, t }) {
       selectedTideInfo.coordinate.lng
     );
 
-    const popup = L.popup({ maxWidth: 340 })
+    const popup = L.popup({ className: "selected-tide-popup", maxWidth: 330 })
       .setLatLng(latlng)
       .setContent(renderTidePopup(selectedTideInfo, t))
       .openOn(map);
@@ -273,20 +276,20 @@ function renderTidePopup(selectedTideInfo, t) {
 
   if (selectedTideInfo.status === "loading") {
     return `
-      <div class="min-w-60 text-slate-900">
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">${escapeHtml(t("section.tide"))}</p>
-        <p class="mt-2 text-sm">${escapeHtml(t("tide.loadingLocation"))}</p>
-        <p class="mt-1 text-xs text-slate-500">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
+      <div class="tide-map-popup is-loading">
+        <p class="tide-map-popup__eyebrow">${escapeHtml(t("section.tide"))}</p>
+        <p class="tide-map-popup__title">${escapeHtml(t("tide.loadingLocation"))}</p>
+        <p class="tide-map-popup__coordinate">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
       </div>
     `;
   }
 
   if (selectedTideInfo.status === "error" || !selectedTideInfo.info) {
     return `
-      <div class="min-w-60 text-slate-900">
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">${escapeHtml(t("section.tide"))}</p>
-        <p class="mt-2 text-sm">${escapeHtml(t("tide.errorLocation"))}</p>
-        <p class="mt-1 text-xs text-slate-500">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
+      <div class="tide-map-popup is-error">
+        <p class="tide-map-popup__eyebrow">${escapeHtml(t("section.tide"))}</p>
+        <p class="tide-map-popup__title">${escapeHtml(t("tide.errorLocation"))}</p>
+        <p class="tide-map-popup__coordinate">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
       </div>`;}
 
   const info = selectedTideInfo.info;
@@ -294,13 +297,13 @@ function renderTidePopup(selectedTideInfo, t) {
   const rows = groups
     .map(
       (group) => `
-        <div class="mt-2">
-          <p class="text-[11px] font-semibold text-sky-700">${group.label}</p>
+        <div class="tide-map-popup__day">
+          <p>${group.label}</p>
           ${group.events
             .map(
               (event) => `
-                <div class="grid grid-cols-[48px_1fr_auto] gap-2 text-xs text-slate-700">
-                  <span>${escapeHtml(event.kind === "high" ? t("tide.high") : t("tide.low"))}</span>
+                <div class="tide-map-popup__event">
+                  <span class="${event.kind === "high" ? "is-high" : "is-low"}">${escapeHtml(event.kind === "high" ? t("tide.high") : t("tide.low"))}</span>
                   <span>${formatTideTime(event.time)}</span>
                   <strong>${formatMeters(event.height, t)}</strong>
                 </div>`
@@ -308,35 +311,40 @@ function renderTidePopup(selectedTideInfo, t) {
         </div>`).join("");
 
   return `
-    <div class="min-w-64 max-h-[500px] space-y-2 overflow-y-auto pr-1 text-slate-900 [scrollbar-color:rgba(2,132,199,0.6)_rgba(226,232,240,0.8)] [scrollbar-width:thin]">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">${escapeHtml(t("section.tide"))}</p>
-        <p class="text-sm font-semibold">${escapeHtml(t("tide.selectedTitle"))}</p>
-        <p class="text-xs text-slate-500">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
+    <div class="tide-map-popup">
+      <div class="tide-map-popup__header">
+        <div>
+          <p class="tide-map-popup__eyebrow">${escapeHtml(t("section.tide"))}</p>
+          <p class="tide-map-popup__title">${escapeHtml(t("tide.selectedTitle"))}</p>
+        </div>
+        <span class="tide-map-popup__location-dot"></span>
       </div>
-      <div class="rounded-md border border-sky-100 bg-sky-50 px-3 py-2">
-        <p class="text-xs font-semibold text-slate-700">${escapeHtml(t("tide.nextThreeDays"))}</p>
-        <div class="mt-1 max-h-[120px] overflow-y-auto pr-1 [scrollbar-color:rgba(2,132,199,0.55)_rgba(226,232,240,0.75)] [scrollbar-width:thin]">
+      <p class="tide-map-popup__coordinate">${coordinate.lat.toFixed(5)}, ${coordinate.lng.toFixed(5)}</p>
+      <div class="tide-map-popup__primary">
+        <span>${escapeHtml(t("tide.seaLevel"))}</span>
+        <strong>${formatMeters(info.currentSeaLevel, t)}</strong>
+      </div>
+      <div class="tide-map-popup__metrics">
+        <div><span>${escapeHtml(t("tide.waveHeight"))}</span><strong>${formatMeters(info.waveHeight, t)}</strong></div>
+        <div><span>${escapeHtml(t("tide.wavePeriod"))}</span><strong>${formatSeconds(info.wavePeriod, t)}</strong></div>
+        <div><span>${escapeHtml(t("tide.windSpeed"))}</span><strong>${formatWindSpeed(info.windSpeed, t)}</strong></div>
+        <div><span>${escapeHtml(t("tide.windDirection"))}</span><strong>${formatWindDirection(info.windDirection, t)}</strong></div>
+      </div>
+      <div class="tide-map-popup__forecast">
+        <p class="tide-map-popup__section-title">${escapeHtml(t("tide.nextThreeDays"))}</p>
+        <div class="tide-map-popup__days">
           ${rows || `<p class="text-xs text-slate-500">${escapeHtml(t("notAvailable"))}</p>`}
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-700">
-        <span>${escapeHtml(t("tide.seaLevel"))}</span><strong>${formatMeters(info.currentSeaLevel, t)}</strong>
-        <span>${escapeHtml(t("tide.waveHeight"))}</span><strong>${formatMeters(info.waveHeight, t)}</strong>
-        <span>${escapeHtml(t("tide.wavePeriod"))}</span><strong>${formatSeconds(info.wavePeriod, t)}</strong>
-        <span>${escapeHtml(t("tide.waveSource"))}</span><strong>${escapeHtml(info.waveSource ?? t("notAvailable"))}</strong>
-        <span>${escapeHtml(t("tide.windSpeed"))}</span><strong>${formatWindSpeed(info.windSpeed, t)}</strong>
-        <span>${escapeHtml(t("tide.windDirection"))}</span><strong>${formatWindDirection(info.windDirection, t)}</strong>
-      </div>
       ${info.wavePoint ? `
-        <p class="rounded-md border border-cyan-100 bg-cyan-50 px-2 py-1 text-[11px] leading-4 text-cyan-900">
+        <p class="tide-map-popup__source">
           ${escapeHtml(t("tide.nearshorePoint", {
             name: info.wavePoint.name ?? info.wavePoint.sitecode,
             id: info.wavePoint.sitecode ?? info.wavePoint.id,
             distance: info.wavePointDistanceKm?.toFixed(1) ?? t("notAvailable")
           }))}
         </p>` : ""}
-      <p class="text-[11px] leading-4 text-slate-500">${escapeHtml(t("tide.popupNote"))}</p>
+      <p class="tide-map-popup__note">${escapeHtml(t("tide.popupNote"))}</p>
     </div>`;
 }
 
