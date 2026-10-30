@@ -5,7 +5,7 @@ export default function PanelShell({ panel, open, darkMode, onToggleTheme, onClo
   const PanelIcon = panel.icon;
 
   return (
-    <aside className={`absolute z-[720] overflow-hidden rounded-3xl border border-aqua-soft/70 bg-bg/95 shadow-marine-lg backdrop-blur-xl transition-all duration-200 ease-out dark:border-white/10 dark:bg-dark-bg/95 md:bottom-4 md:left-[82px] md:top-5 md:w-[350px] ${open
+    <aside className={`absolute z-[720] overflow-hidden rounded-3xl border border-aqua-soft/70 bg-bg/95 shadow-marine-lg backdrop-blur-xl transition-all duration-200 ease-out dark:border-white/10 dark:bg-dark-bg/95 md:bottom-4 md:left-[calc(var(--nav-rail-left)+var(--nav-rail-width)+var(--nav-panel-gap))] md:top-5 md:w-[350px] ${open
       ? "bottom-20 left-3 right-3 max-h-[calc(100dvh-7rem)] translate-y-0 opacity-100 md:max-h-none md:translate-x-0"
       : "pointer-events-none bottom-20 left-3 right-3 max-h-[calc(100dvh-7rem)] translate-y-4 opacity-0 md:max-h-none md:-translate-x-[390px] md:translate-y-0"}`}>
       <header className="flex items-center justify-between gap-3 border-b border-aqua-soft/70 bg-surface/90 px-4 py-3.5 dark:border-white/10 dark:bg-dark-surface/90">

@@ -155,8 +155,8 @@ export default function App() {
   }, []);
 
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-bg font-sans text-ink-strong transition-colors duration-200 dark:bg-dark-bg dark:text-dark-ink">
-      <div className="absolute inset-x-2 bottom-20 top-2 overflow-hidden rounded-2xl border border-aqua-soft shadow-marine md:inset-y-3 md:left-[88px] md:right-3">
+    <main className="relative h-dvh w-full overflow-hidden bg-bg font-sans text-ink-strong transition-colors duration-200 [--nav-panel-gap:1rem] [--nav-rail-left:1rem] [--nav-rail-width:3.5rem] dark:bg-dark-bg dark:text-dark-ink">
+      <div className="absolute inset-x-2 bottom-20 top-2 overflow-hidden rounded-2xl border border-aqua-soft shadow-marine md:inset-y-3 md:left-[calc(var(--nav-rail-left)+var(--nav-rail-width)+var(--nav-panel-gap))] md:right-3">
         <MarineMap
           {...mapState}
           selectedMhlBuoy={selectedMhlBuoy}

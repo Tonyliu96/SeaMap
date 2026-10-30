@@ -87,7 +87,7 @@ export default function Sidebar({
 
   return (
       <>
-        <nav className="absolute bottom-3 left-3 right-3 z-[730] flex h-14 items-center justify-center gap-1 rounded-2xl border border-aqua-soft/70 bg-surface p-1 shadow-marine dark:border-white/10 dark:bg-dark-surface md:bottom-auto md:left-4 md:right-auto md:top-1/2 md:h-auto md:w-14 md:-translate-y-1/2 md:flex-col" aria-label={t("layer.title")}>
+        <nav className="absolute bottom-3 left-3 right-3 z-[730] flex h-14 items-center justify-center gap-1 rounded-2xl border border-aqua-soft/70 bg-surface p-1 shadow-marine dark:border-white/10 dark:bg-dark-surface md:bottom-auto md:left-[var(--nav-rail-left)] md:right-auto md:top-1/2 md:h-auto md:w-[var(--nav-rail-width)] md:-translate-y-1/2 md:flex-col" aria-label={t("layer.title")}>
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const selected = panelOpen && activeSection === item.id;

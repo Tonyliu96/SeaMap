@@ -80,7 +80,7 @@ export default function MarineForecastPanel({ location, onClose, language, t }) 
   if (!location) return null;
 
   return (
-    <section className="absolute inset-x-0 bottom-0 z-[705] flex min-h-[220px] flex-col overflow-hidden rounded-t-3xl border border-aqua-soft/70 bg-surface/95 font-sans shadow-marine-lg backdrop-blur-xl dark:border-white/10 dark:bg-dark-surface/95 md:bottom-4 md:left-4 md:right-4 md:rounded-3xl" style={{ height: `${panelSize.height}px` }}>
+    <section className="absolute inset-x-0 bottom-0 z-[705] flex min-h-[220px] flex-col overflow-hidden rounded-t-3xl border border-aqua-soft/70 bg-surface/95 font-sans shadow-marine-lg backdrop-blur-xl dark:border-white/10 dark:bg-dark-surface/95 md:bottom-4 md:left-[calc(var(--nav-rail-left)+var(--nav-rail-width)+var(--nav-panel-gap))] md:right-4 md:rounded-3xl" style={{ height: `${panelSize.height}px` }}>
       <ResizablePanelHandle onPointerDown={panelSize.onPointerDown} resizeBy={panelSize.resizeBy} label="Resize marine forecast panel" />
       <header className="mt-4 flex min-h-[62px] shrink-0 items-center gap-3 border-b border-aqua-soft/70 px-3 py-2.5 sm:px-4">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-aqua-soft/40 text-primary"><Waves size={19}/></div>

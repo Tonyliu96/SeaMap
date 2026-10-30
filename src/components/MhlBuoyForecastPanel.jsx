@@ -79,7 +79,7 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
   if (!buoy) return null;
 
   return (
-    <Card as="section" className="absolute bottom-[76px] left-3 right-3 z-[700] flex min-h-[210px] flex-col overflow-hidden rounded-t-3xl rounded-b-2xl md:bottom-4 md:left-4 md:right-4" style={{ height: `${panelSize.height}px` }}>
+    <Card as="section" className="absolute bottom-[76px] left-3 right-3 z-[700] flex min-h-[210px] flex-col overflow-hidden rounded-t-3xl rounded-b-2xl md:bottom-4 md:left-[calc(var(--nav-rail-left)+var(--nav-rail-width)+var(--nav-panel-gap))] md:right-4" style={{ height: `${panelSize.height}px` }}>
       <ResizablePanelHandle onPointerDown={panelSize.onPointerDown} resizeBy={panelSize.resizeBy} label="Resize wave forecast panel" />
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-aqua-soft/70 px-4 pb-3 pt-5">
         <div className="flex min-w-0 items-center gap-2.5">
