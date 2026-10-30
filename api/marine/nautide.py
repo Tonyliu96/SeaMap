@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import httpx
 
 from .cache import TtlCache
+from .history_store import load_previous_day, save_first_day
 from .models import (
     DailyMarineForecast,
     HourlyMarineForecast,
@@ -18,6 +19,7 @@ from .models import (
     MarineLocation,
     TideEvent,
 )
+from .pressure import annotate_pressure_forecast
 
 PAGE_HOST = "tides4fishing.com"
 API_HOST = "io-s2.nautide.com"
@@ -80,6 +82,7 @@ def normalize_forecast(
     location: MarineLocation,
     cache_status: str,
     station_code: str | None = None,
+    pressure_history: list[DailyMarineForecast] | None = None,
 ) -> MarineForecastResponse:
     weather_days = payload.get("data2", {}).get("weather", [])
     if not isinstance(weather_days, list) or not weather_days:
@@ -119,6 +122,8 @@ def normalize_forecast(
                 date=str(raw_day.get("date") or ""), tides=tides, hourly=hourly
             )
         )
+
+    annotate_pressure_forecast(days, history_days=pressure_history)
 
     expires_raw = _number(payload.get("time_expires"))
     expires_iso = (
@@ -186,9 +191,19 @@ async def fetch_forecast(location: MarineLocation) -> MarineForecastResponse:
         except ValueError as error:
             raise UpstreamError("The marine forecast provider returned invalid JSON.") from error
 
+    station_code = parameters["JS_CODIGO_ESTACION"]
+    weather_days = payload.get("data2", {}).get("weather", [])
+    first_date = str(weather_days[0].get("date") or "") if weather_days else ""
+    previous_day = await load_previous_day(station_code, first_date)
     result = normalize_forecast(
-        payload, location, "miss", parameters["JS_CODIGO_ESTACION"]
+        payload,
+        location,
+        "miss",
+        station_code,
+        pressure_history=[previous_day] if previous_day else None,
     )
+    if result.days:
+        await save_first_day(station_code, result.days[0])
     upstream_expiry = _number(payload.get("time_expires"))
     now = time.time()
     expires_at = min(upstream_expiry or now + FALLBACK_TTL_SECONDS, now + MAX_CACHE_TTL_SECONDS)

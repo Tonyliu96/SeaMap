@@ -178,6 +178,20 @@ Nautide request parameters, normalizes the response, and caches it. Station
 codes, cache keys, and arbitrary upstream URLs are never accepted from the
 browser.
 
+When Upstash Redis is configured, the API also stores the complete first
+forecast day for each station for three days. The previous day's record is used
+only to complete the three-hour pressure comparison around midnight. Add the
+following variables to Vercel for Production, Preview, and Development:
+
+```text
+KV_REST_API_URL
+KV_REST_API_TOKEN
+```
+
+Direct Upstash variable names (`UPSTASH_REDIS_REST_URL` and
+`UPSTASH_REDIS_REST_TOKEN`) are supported as well. Do not expose either token
+through a `VITE_` prefixed variable.
+
 This is an unofficial integration with a third-party public service. Confirm
 the provider's current terms and obtain any required permission before public
 or commercial deployment. It does not bypass access controls and must not be
@@ -185,14 +199,15 @@ used for navigation or as a guarantee of coastal safety.
 
 ## Local full-stack development
 
-Use two terminals:
+Create the Python environment once:
 
 ```bash
 python3.13 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn api.index:app --reload --port 8000
 ```
+
+Then start the frontend and API together:
 
 ```bash
 npm install

@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "vite --host 0.0.0.0",
-    "dev": "vite --host 0.0.0.0",
+    "start": "node scripts/dev.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "vite --host 0.0.0.0",
+    "dev:api": ".venv/bin/python -m uvicorn api.index:app --host 127.0.0.1 --port 8000",
     "convert:lidar": "node scripts/convert-nsw-lidar.mjs",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0"

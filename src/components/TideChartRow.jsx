@@ -79,28 +79,28 @@ export default function TideChartRow({ label, values, currentTime }) {
 
     return (
         <>
-            <div className="mhl-grid-label sticky left-0 z-20 flex flex-col justify-center bg-slate-900/95 font-medium text-slate-300">
+            <div className="mhl-grid-label sticky left-0 z-20 flex flex-col justify-center font-mono font-bold uppercase">
                 <span>{label}</span>
             </div>
 
-            <div className="relative bg-slate-950/60" style={{ gridColumn: `span ${values.length}`, height: `${height}px` }}>
+            <div className="relative bg-[#0b0d0f]" style={{ gridColumn: `span ${values.length}`, height: `${height}px` }}>
                 <svg width={totalWidth} height={height} className="absolute left-0 top-0 overflow-visible">
                     <defs>
                         <linearGradient id="tide-gradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#64d2ff" stopOpacity="0.28" />
-                            <stop offset="100%" stopColor="#0a84ff" stopOpacity="0.0" />
+                            <stop offset="0%" stopColor="#6ee7f5" stopOpacity="0.24" />
+                            <stop offset="100%" stopColor="#3564f4" stopOpacity="0.02" />
                         </linearGradient>
                     </defs>
 
-                    <line x1="0" y1={zeroY} x2={totalWidth} y2={zeroY} stroke="#64748b" strokeDasharray="3 3" strokeOpacity="0.5" strokeWidth="1"/>
+                    <line x1="0" y1={zeroY} x2={totalWidth} y2={zeroY} stroke="#59616b" strokeDasharray="3 3" strokeOpacity="0.65" strokeWidth="1"/>
 
                     {Number.isFinite(currentX) && (
-                        <line x1={currentX} y1="0" x2={currentX} y2={height} stroke="#0a84ff" strokeOpacity="0.72" strokeWidth="1"/>
+                        <line x1={currentX} y1="0" x2={currentX} y2={height} stroke="#ffe100" strokeOpacity="0.9" strokeWidth="1"/>
                     )}
 
                     <path d={areaD} fill="url(#tide-gradient)" />
 
-                    <path d={pathD} fill="none" stroke="#64d2ff" strokeWidth="2" strokeLinecap="round"/>
+                    <path d={pathD} fill="none" stroke="#6ee7f5" strokeWidth="2"/>
 
                     {peakPoints.map((pt, idx) => {
                         const isHigh = pt.kind === "high";
@@ -115,11 +115,11 @@ export default function TideChartRow({ label, values, currentTime }) {
 
                         return (
                             <g key={idx}>
-                                <circle cx={pt.x} cy={pt.y} r="3.5" fill="#64d2ff" stroke="#1c1c1e" strokeWidth="1.5" />
+                                <circle cx={pt.x} cy={pt.y} r="3.5" fill="#6ee7f5" stroke="#0b0d0f" strokeWidth="1.5" />
 
-                                <rect x={pt.x - 30} y={textY - 9} width="60" height="14" rx="4" fill="#2c2c2e" fillOpacity="0.94" stroke="#ffffff" strokeOpacity="0.1" strokeWidth="0.8"/>
+                                <rect x={pt.x - 30} y={textY - 9} width="60" height="14" fill="#15191d" fillOpacity="0.98" stroke="#343a42" strokeWidth="0.8"/>
 
-                                <text x={pt.x} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-sky-100 text-[9px] font-semibold tracking-tight">
+                                <text x={pt.x} y={textY} textAnchor="middle" dominantBaseline="central" className="fill-[#f7f3e8] font-mono text-[9px] font-bold">
                                     {labelText}
                                 </text>
                             </g>

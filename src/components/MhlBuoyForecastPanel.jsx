@@ -66,29 +66,30 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
   if (!buoy) return null;
 
   return (
-    <section className="mhl-panel absolute bottom-[76px] left-3 right-3 z-[700] h-[min(360px,42dvh)] min-h-[250px] overflow-hidden rounded-lg text-white md:bottom-4 md:left-4 md:right-4 md:h-[min(340px,32dvh)]">
+    <section className="mhl-panel absolute bottom-[76px] left-3 right-3 z-[700] h-[min(360px,42dvh)] min-h-[250px] overflow-hidden text-white md:bottom-4 md:left-4 md:right-4 md:h-[min(340px,32dvh)]">
+      <div className="grid h-1 grid-cols-5" aria-hidden="true"><span className="bg-[#f7f3e8]"/><span className="bg-[#ffe100]"/><span className="bg-[#ff3b4f]"/><span className="bg-[#19b56b]"/><span className="bg-[#3564f4]"/></div>
       <header className="mhl-panel-header flex items-center justify-between gap-3 px-3.5 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="mhl-station-symbol grid h-9 w-9 shrink-0 place-items-center rounded-lg">
+          <div className="mhl-station-symbol grid h-9 w-9 shrink-0 place-items-center">
             <Waves size={17} />
           </div>
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
-              <h2 className="truncate text-[15px] font-semibold text-white">
+              <h2 className="truncate text-[15px] font-bold text-[#f7f3e8]">
               {buoy.name ?? buoy.sitecode}
               </h2>
-              <span className="mhl-station-code hidden rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase sm:inline">
+              <span className="mhl-station-code hidden px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase sm:inline">
                 {buoy.sitecode}
               </span>
             </div>
-            <p className="truncate text-[10px] text-white/45">
+            <p className="truncate font-mono text-[9px] uppercase tracking-[0.06em] text-[#6ee7f5]">
               {t("mhl.panelTitle")} · {buoy.latitude.toFixed(4)}, {buoy.longitude.toFixed(4)}
             </p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <span className="mhl-live-status hidden items-center gap-1.5 text-[10px] font-medium sm:flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#30d158]" /> MHL observed
+          <span className="mhl-live-status hidden items-center gap-1.5 font-mono text-[9px] font-bold uppercase sm:flex">
+            <span className="h-1.5 w-1.5 bg-[#19b56b]" /> MHL observed
           </span>
           <button
             type="button"
@@ -101,18 +102,18 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
         </div>
       </header>
 
-      <div className="marine-scrollbar h-[calc(100%-53px)] overflow-y-auto px-2 pb-2 pt-1.5">
+      <div className="marine-scrollbar h-[calc(100%-57px)] overflow-y-auto px-2 pb-2 pt-1.5">
         {status === "loading" && (
           <div className="grid h-full min-h-40 place-items-center">
-            <div className="flex items-center gap-2 text-xs text-white/60">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-[#0a84ff]" />
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase text-[#8c959f]">
+              <span className="h-2 w-2 animate-pulse bg-[#ffe100]" />
               {t("mhl.forecastLoading")}
             </div>
           </div>
         )}
 
         {status === "error" && (
-          <div className="rounded-md border border-rose-300/25 bg-rose-500/10 px-3 py-4 text-sm text-rose-100">
+          <div className="border border-[#7b3540] bg-[#2b1418] px-3 py-4 font-mono text-[10px] text-[#ff9ba7]">
             {t("mhl.forecastError")}
           </div>
         )}
@@ -126,7 +127,7 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
               onScroll={scrollForecast}
               t={t}/>
 
-            <div ref={forecastScrollerRef} className="mhl-forecast-scroll marine-scrollbar overflow-x-auto rounded-lg">
+            <div ref={forecastScrollerRef} className="mhl-forecast-scroll marine-scrollbar overflow-x-auto">
               <div
                 className="mhl-forecast-grid min-w-max"
                 style={{ gridTemplateColumns: `68px repeat(${hours.length}, 44px)` }}>
@@ -148,7 +149,7 @@ export default function MhlBuoyForecastPanel({ buoy, onClose, t }) {
                 <TideChartRow label={t("mhl.tideMsl")} values={hours} currentTime={currentTime} />
               </div>
             </div>
-            <p className="px-1 pt-1 text-[9px] leading-3 text-white/30">
+            <p className="px-1 pt-1 font-mono text-[8px] uppercase leading-3 text-[#626a74]">
               {t("mhl.disclaimer")}
             </p>
           </>
@@ -214,7 +215,7 @@ function findNearestHourIndex(hours, now, todayKey) {
 
 function CurrentObservation({ latest, t }) {
   return (
-      <div className="mhl-observation-strip grid grid-cols-2 overflow-hidden rounded-lg sm:grid-cols-4">
+      <div className="mhl-observation-strip grid grid-cols-2 overflow-hidden sm:grid-cols-4">
         <Metric icon={Waves} title={t("mhl.latestWaveHeight")} value={formatMeters(latest?.waveHeight, t)} />
         <Metric icon={Timer} title={t("mhl.latestWavePeriod")} value={formatSeconds(latest?.wavePeriod, t)} />
         <Metric icon={Navigation} title={t("mhl.latestWaveDirection")} value={formatWindDirection(latest?.waveDirection, t)} />
@@ -228,8 +229,8 @@ function Metric({ icon: Icon, title, value }) {
       <div className="mhl-observation-metric flex min-w-0 items-center gap-2 px-2.5 py-1.5">
         <Icon size={14} className="mhl-metric-icon shrink-0" />
         <div className="min-w-0">
-          <p className="truncate text-[8px] font-medium uppercase text-white/35">{title}</p>
-          <p className="truncate text-[12px] font-semibold tabular-nums text-white/95">{value}</p>
+          <p className="truncate font-mono text-[8px] font-bold uppercase text-[#747d87]">{title}</p>
+          <p className="truncate font-mono text-[12px] font-bold tabular-nums text-[#f7f3e8]">{value}</p>
         </div>
       </div>
   );
@@ -237,22 +238,22 @@ function Metric({ icon: Icon, title, value }) {
 
 function ForecastToolbar({ hourStep, setHourStep, onScroll, t }) {
   return (
-    <div className="flex h-8 items-center justify-between gap-2 px-1">
-      <div className="flex items-center gap-2 text-[9px] font-semibold uppercase text-white/40">
+    <div className="flex h-8 items-center justify-between gap-2 px-1 font-mono">
+      <div className="flex items-center gap-2 text-[9px] font-bold uppercase text-[#8c959f]">
         <span>{t("mhl.modelForecast")}</span>
-        <span className="h-1 w-1 rounded-full bg-white/20" />
-        <span className="normal-case text-white/30">Open-Meteo</span>
+        <span className="h-1 w-1 bg-[#ffe100]" />
+        <span className="normal-case text-[#626a74]">Open-Meteo</span>
       </div>
       <div className="flex items-center gap-1.5">
-        <div className="mhl-segmented-control flex items-center rounded-md p-0.5">
+        <div className="mhl-segmented-control flex items-center p-0.5">
           {[1, 3].map((step) => (
             <button
               key={step}
               type="button"
-              className={`h-5 min-w-8 rounded px-1.5 text-[9px] font-bold transition ${
+              className={`h-5 min-w-8 px-1.5 text-[9px] font-bold transition ${
                 hourStep === step
                   ? "is-selected"
-                  : "text-white/45 hover:text-white/80"
+                  : "text-[#747d87] hover:text-[#f7f3e8]"
               }`}
               onClick={() => setHourStep(step)}>
               {step}h

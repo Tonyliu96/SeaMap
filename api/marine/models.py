@@ -35,6 +35,12 @@ class HourlyMarineForecast(BaseModel):
     swell_period_seconds: float | None = Field(alias="swellPeriodSeconds")
     water_temperature_c: float | None = Field(alias="waterTemperatureC")
     pressure_hpa: float | None = Field(alias="pressureHpa")
+    pressure_delta_hpa: float | None = Field(default=None, alias="pressureDeltaHpa")
+    pressure_trend: str | None = Field(default=None, alias="pressureTrend")
+    pressure_fluctuating: bool | None = Field(default=None, alias="pressureFluctuating")
+    pressure_falling_hours: int = Field(default=0, alias="pressureFallingHours")
+    fishing_condition: str | None = Field(default=None, alias="fishingCondition")
+    pressure_condition_reason: str | None = Field(default=None, alias="pressureConditionReason")
 
     model_config = {"populate_by_name": True}
 

@@ -32,25 +32,6 @@ function closestHour(hours, date) {
   }, hours[0]);
 }
 
-function pressureTrend(hours, current) {
-  if (!current || !Number.isFinite(current.pressureHpa)) return "unknown";
-  const index = hours.findIndex((hour) => hour.time === current.time);
-  const previous = hours[Math.max(0, index - 3)];
-  if (!previous || previous === current || !Number.isFinite(previous.pressureHpa)) return "unknown";
-  const change = current.pressureHpa - previous.pressureHpa;
-  if (change >= 1) return "rising";
-  if (change <= -1) return "falling";
-  return "stable";
-}
-
-function pressureCondition(pressureHpa, trend) {
-  if (!Number.isFinite(pressureHpa)) return "unknown";
-  if (pressureHpa < 1010) return "poor";
-  if (trend === "falling") return "poor";
-  if (pressureHpa <= 1025 && trend === "rising") return "veryGood";
-  return "good";
-}
-
 export default function MarineForecastPanel({ location, onClose, language, t }) {
   const [forecast, setForecast] = useState(null);
   const [status, setStatus] = useState("idle");
@@ -96,53 +77,55 @@ export default function MarineForecastPanel({ location, onClose, language, t }) 
   if (!location) return null;
 
   return (
-    <section className="absolute inset-x-0 bottom-0 z-[705] overflow-hidden rounded-t-lg border-x border-t border-white/10 bg-[#16181c]/95 font-sans shadow-[0_28px_90px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-2xl md:bottom-4 md:left-4 md:right-4 md:rounded-lg md:border">
-      <div className="absolute left-1/2 top-1.5 h-1 w-10 -translate-x-1/2 rounded-full bg-white/15 md:hidden" aria-hidden="true"/>
-      <header className="flex items-center gap-3 border-b border-white/[0.07] px-4 pb-3 pt-4 md:py-3">
-        <Waves size={22} className="shrink-0 text-sky-300"/>
+    <section className="absolute inset-x-0 bottom-0 z-[705] overflow-hidden rounded-t border border-[#34383f] bg-[#0b0d0f]/[0.97] font-sans shadow-[0_24px_80px_rgba(0,0,0,0.62)] backdrop-blur-xl md:bottom-4 md:left-4 md:right-4 md:rounded">
+      <div className="grid h-1 grid-cols-5" aria-hidden="true">
+        <span className="bg-[#f7f3e8]"/><span className="bg-[#ffe100]"/><span className="bg-[#ff3b4f]"/><span className="bg-[#19b56b]"/><span className="bg-[#3564f4]"/>
+      </div>
+      <header className="flex min-h-[58px] items-center gap-3 border-b border-[#30343a] px-3 py-2.5 sm:px-4">
+        <div className="grid h-9 w-9 shrink-0 place-items-center border border-[#3b4149] bg-[#15191d] text-[#ffe100] shadow-[3px_3px_0_#15191d]"><Waves size={19}/></div>
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-base font-semibold text-white">{location.name}</p>
-            <span className="shrink-0 rounded bg-white/[0.07] px-1.5 py-0.5 text-[9px] font-semibold text-white/50">{location.state}</span>
+            <p className="truncate text-sm font-bold text-[#f7f3e8] sm:text-base">{location.name}</p>
+            <span className="shrink-0 border border-[#4a5059] bg-[#181c20] px-1.5 py-0.5 font-mono text-[8px] font-bold text-[#9ea5ae]">{location.state}</span>
           </div>
-          <p className="truncate text-[10px] font-medium text-sky-300/75">{t("marine.outlook")} · {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</p>
+          <p className="truncate font-mono text-[9px] uppercase tracking-[0.08em] text-[#6ee7f5]">{t("marine.outlook")} / {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</p>
         </div>
         <IntervalControl interval={interval} setInterval={setInterval} className="hidden sm:flex"/>
-        <button type="button" aria-label={t("marine.close")} className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/[0.07] text-white/55 transition hover:bg-white/[0.14] hover:text-white active:scale-95" onClick={onClose}><X size={16}/></button>
+        <button type="button" aria-label={t("marine.close")} className="grid h-8 w-8 shrink-0 place-items-center border border-[#343a42] bg-[#171a1e] text-[#9da4ad] transition hover:border-[#ff3b4f] hover:bg-[#ff3b4f] hover:text-white active:translate-y-px" onClick={onClose}><X size={15}/></button>
       </header>
 
-      <div className="marine-scrollbar max-h-[min(72dvh,660px)] overflow-y-auto px-3 pb-3 pt-2 max-sm:max-h-[min(74dvh,620px)]">
-        {status === "loading" && <div className="grid h-52 place-items-center text-sm text-white/55">{t("marine.forecastLoading")}</div>}
-        {status === "error" && <div className="grid h-52 place-items-center text-sm text-rose-200">{error || t("marine.forecastError")}</div>}
+      <div className="marine-scrollbar max-h-[min(74dvh,680px)] overflow-y-auto px-2.5 pb-3 pt-2.5 sm:px-3">
+        {status === "loading" && <div className="grid h-52 place-items-center border border-[#30343a] bg-[#111417] font-mono text-xs uppercase tracking-[0.12em] text-[#7c848e]">{t("marine.forecastLoading")}</div>}
+        {status === "error" && <div className="grid h-52 place-items-center border border-[#6d3038] bg-[#231316] px-6 text-center font-mono text-xs text-[#ff8a96]">{error || t("marine.forecastError")}</div>}
         {status === "ready" && forecast && (
           <>
-            <div className="mb-2 flex items-center gap-1 overflow-x-auto pb-1">
+            <div className="mb-2 flex items-stretch gap-px overflow-x-auto border border-[#30343a] bg-[#30343a] p-px">
               {forecast.days.map((item, index) => (
                 <button key={item.date}
-                  className={`shrink-0 rounded-md px-3 py-1.5 text-[11px] font-semibold transition ${selectedDate === item.date ? "bg-white text-slate-950" : "text-white/55 hover:bg-white/10 hover:text-white"}`}
+                  className={`shrink-0 border-b-2 px-3 py-2 font-mono text-[10px] font-bold uppercase transition ${selectedDate === item.date ? "border-[#ffe100] bg-[#f7f3e8] text-[#0b0d0f]" : "border-transparent bg-[#121519] text-[#777f89] hover:bg-[#191d21] hover:text-[#f7f3e8]"}`}
                   onClick={() => setSelectedDate(item.date)}>
                   {index === 0 ? t("marine.today") : index === 1 ? t("marine.tomorrow") : shortDate(item.date, locale)}
                 </button>
               ))}
-              <IntervalControl interval={interval} setInterval={setInterval} className="ml-auto flex sm:hidden"/>
+              <IntervalControl interval={interval} setInterval={setInterval} className="sticky right-0 ml-auto flex sm:hidden"/>
             </div>
 
-            {current && <CurrentConditions hour={current} hours={day?.hourly ?? []} t={t}/>} 
+            {current && <CurrentConditions hour={current} t={t} />}
 
             <div className="my-2 grid gap-2 md:grid-cols-[1.4fr_0.8fr]">
               <WaveTrend hours={day?.hourly ?? []} t={t}/>
               <TideEvents tides={day?.tides ?? []} locale={locale} t={t}/>
             </div>
 
-            <div className="mb-1 mt-3 flex items-center justify-between px-1">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/45">{t("marine.hourlyDetails")}</h3>
-              <span className="text-[9px] text-white/30">{interval}h</span>
+            <div className="mb-1.5 mt-3 flex items-center justify-between">
+              <h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#aeb5be]">// {t("marine.hourlyDetails")}</h3>
+              <span className="border border-[#343a42] bg-[#15191d] px-1.5 py-0.5 font-mono text-[8px] text-[#6ee7f5]">STEP {interval}H</span>
             </div>
-            <div className="max-h-[min(36dvh,260px)] overflow-x-auto rounded-lg border border-white/[0.06] bg-black/10 [scrollbar-color:rgba(94,234,212,0.55)_rgba(255,255,255,0.05)] [scrollbar-width:thin]">
-              <table className="min-w-max border-separate border-spacing-0 text-center text-[10px] text-white/70">
-                <thead><tr className="bg-white/[0.055] text-white/45">
-                  <th className="sticky left-0 z-10 w-28 bg-[#202124] px-3 py-2 text-left font-medium">{t("marine.metric")}</th>
-                  {hours.map((hour) => <th key={hour.time} className={`relative w-[62px] px-2 py-2 font-semibold text-white/75 ${hour.time === currentColumnTime ? "bg-amber-300/[0.08] text-amber-200 before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-amber-300" : ""}`}>{hour.time === currentColumnTime && <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 text-[7px] uppercase tracking-wide text-amber-300">▲ {t("marine.now")}</span>}{hour.time}</th>)}
+            <div className="max-h-[min(36dvh,260px)] overflow-x-auto border border-[#30343a] bg-[#0d1012] [scrollbar-color:#3564f4_#15191d] [scrollbar-width:thin]">
+              <table className="min-w-max border-separate border-spacing-0 text-center font-mono text-[10px] text-[#c3c8ce]">
+                <thead><tr className="bg-[#171a1e] text-[#8b939d]">
+                  <th className="sticky left-0 z-10 w-28 border-r border-[#30343a] bg-[#171a1e] px-3 py-2 text-left font-bold uppercase">{t("marine.metric")}</th>
+                  {hours.map((hour) => <th key={hour.time} className={`relative w-[62px] border-l border-[#252a30] px-2 py-2 font-bold ${hour.time === currentColumnTime ? "bg-[#ffe100] text-[#0b0d0f]" : ""}`}>{hour.time === currentColumnTime && <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 text-[7px] uppercase tracking-wide text-[#0b0d0f]">▲ {t("marine.now")}</span>}{hour.time}</th>)}
                 </tr></thead>
                 <tbody>
                   <ForecastRow icon={Wind} label={t("marine.windKmh")} hours={hours} currentTime={currentColumnTime} render={(hour) => value(hour.windSpeedKmh, 0)}/>
@@ -156,7 +139,7 @@ export default function MarineForecastPanel({ location, onClose, language, t }) 
                 </tbody>
               </table>
             </div>
-            <footer className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 text-[10px] text-white/35">
+            <footer className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-[#292e34] pt-2 font-mono text-[9px] uppercase tracking-[0.06em] text-[#626a74]">
               <span>{t("marine.forecastGuidance")}</span>
               <span>{forecast.cacheStatus === "hit" ? t("marine.cached") : t("marine.updated")}</span>
             </footer>
@@ -169,58 +152,55 @@ export default function MarineForecastPanel({ location, onClose, language, t }) 
 
 function IntervalControl({ interval, setInterval, className = "" }) {
   return (
-    <div className={`${className} shrink-0 rounded-md bg-white/[0.08] p-0.5`}>
+    <div className={`${className} shrink-0 border border-[#343a42] bg-[#111417] p-0.5`}>
       {[1, 3].map((step) => (
-        <button key={step} type="button" className={`min-w-9 rounded px-2 py-1 text-[11px] font-semibold transition ${interval === step ? "bg-white/[0.16] text-white shadow-sm" : "text-white/45 hover:text-white/80"}`} onClick={() => setInterval(step)}>{step}h</button>
+        <button key={step} type="button" className={`min-w-9 px-2 py-1 font-mono text-[10px] font-bold transition ${interval === step ? "bg-[#3564f4] text-white" : "text-[#6e7680] hover:bg-[#1b2025] hover:text-white"}`} onClick={() => setInterval(step)}>{step}h</button>
       ))}
     </div>
   );
 }
 
-function CurrentConditions({ hour, hours, t }) {
-  const trend = pressureTrend(hours, hour);
-  const pressureStatus = {
-    veryGood: { label: t("marine.pressureVeryGood"), className: "bg-sky-400/15 text-sky-300" },
-    good: { label: t("marine.pressureGood"), className: "bg-emerald-400/15 text-emerald-300" },
-    poor: { label: t("marine.pressurePoor"), className: "bg-rose-400/15 text-rose-300" },
-    unknown: { label: "–", className: "bg-white/[0.06] text-white/40" }
-  }[pressureCondition(hour.pressureHpa, trend)];
+function CurrentConditions({ hour, t }) {
+  const pressureDelta = Number.isFinite(hour.pressureDeltaHpa)
+    ? `${hour.pressureDeltaHpa > 0 ? "+" : ""}${value(hour.pressureDeltaHpa, 0)} hPa · ${t("marine.pressureThreeHours")}`
+    : t("marine.pressureNoHistory");
+  const pressureTrend = {
+    rising: { label: t("marine.pressureRising"), className: "bg-sky-400/15 text-sky-200" },
+    stable: { label: t("marine.pressureStable"), className: "bg-emerald-400/15 text-emerald-200" },
+    falling: { label: t("marine.pressureFalling"), className: "bg-rose-400/15 text-rose-200" }
+  }[hour.pressureTrend];
+  const fishingCondition = {
+    veryGood: { label: t("marine.pressureVeryGood"), className: "bg-sky-400/15 text-sky-200" },
+    good: { label: t("marine.pressureGood"), className: "bg-emerald-400/15 text-emerald-200" },
+    poor: { label: t("marine.pressurePoor"), className: "bg-rose-400/15 text-rose-200" }
+  }[hour.fishingCondition];
   const metrics = [
-    { icon: Wind, label: t("marine.windKmh"), value: value(hour.windSpeedKmh, 0), unit: "km/h", direction: hour.windDirectionDegrees, detail: hour.windDirection },
-    { icon: Timer, label: t("marine.swellPeriod"), value: value(hour.swellPeriodSeconds), unit: "s" },
-    { icon: Thermometer, label: t("marine.waterTemperature"), value: value(hour.waterTemperatureC, 0), unit: "°C" },
-    { icon: Gauge, label: t("marine.pressure"), value: value(hour.pressureHpa, 0), unit: "hPa", badge: pressureStatus }
+    { icon: Waves, accent: "#ffe100", label: t("marine.swellHeight"), value: value(hour.swellHeightM), unit: "m", direction: hour.swellDirectionDegrees, detail: `${t("marine.significantWave")} ${value(hour.significantWaveHeightM)} m · ${hour.swellDirection || "–"}` },
+    { icon: Wind, accent: "#6ee7f5", label: t("marine.windKmh"), value: value(hour.windSpeedKmh, 0), unit: "km/h", direction: hour.windDirectionDegrees, detail: hour.windDirection },
+    { icon: Timer, accent: "#b8a1ff", label: t("marine.swellPeriod"), value: value(hour.swellPeriodSeconds), unit: "s" },
+    { icon: Thermometer, accent: "#5ee39a", label: t("marine.waterTemperature"), value: value(hour.waterTemperatureC, 0), unit: "°C" },
+    { icon: Gauge, accent: "#ff7181", label: t("marine.pressure"), value: value(hour.pressureHpa, 0), unit: "hPa", detail: pressureDelta, statuses: [pressureTrend, fishingCondition].filter(Boolean) }
   ];
   return (
-    <section className="pt-2">
-      <div className="mb-2 flex items-center justify-between px-1">
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">{t("marine.currentConditions")}</h3>
-        <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">{hour.time}</span>
+    <section className="pt-1">
+      <div className="mb-1.5 flex items-center justify-between">
+        <h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[#aeb5be]">// {t("marine.currentConditions")}</h3>
+        <span className="border border-[#2c684a] bg-[#102319] px-2 py-0.5 font-mono text-[9px] font-bold text-[#5ee39a]">LIVE {hour.time}</span>
       </div>
-      <div className="grid gap-2 md:grid-cols-[1.2fr_2fr]">
-        <article className="flex min-h-[104px] items-center gap-4 rounded-lg border border-sky-300/[0.14] bg-[linear-gradient(125deg,rgba(14,165,233,0.13),rgba(56,189,248,0.025))] px-4 py-3">
-          <div className="relative grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full border border-sky-300/[0.18] bg-slate-950/25 shadow-[inset_0_0_0_6px_rgba(56,189,248,0.035)]" aria-hidden="true">
-            <span className="absolute top-1 text-[8px] font-bold text-white/30">N</span>
-            <Waves size={21} className="text-sky-300"/>
-            {Number.isFinite(hour.swellDirectionDegrees) && <span className="absolute grid h-[54px] w-[54px] place-items-start justify-center pt-[3px] text-amber-400 [&_svg]:h-[17px] [&_svg]:w-[17px]"><DirectionArrow degrees={hour.swellDirectionDegrees}/></span>}
-          </div>
-          <div>
-            <p className="text-[10px] font-medium text-white/45">{t("marine.swellHeight")}</p>
-            <p className="mt-0.5 tabular-nums text-[32px] font-semibold leading-none text-white">{value(hour.swellHeightM)}<span className="ml-1 text-xs font-medium text-white/40">m</span></p>
-            <p className="mt-2 text-[10px] font-semibold text-sky-300">{t("marine.significantWave")} {value(hour.significantWaveHeightM)} m · {hour.swellDirection || "–"}</p>
-          </div>
-        </article>
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-white/[0.055] sm:grid-cols-4">
-        {metrics.map(({ icon: Icon, label, value: metricValue, unit, direction, detail, badge }) => (
-          <article key={label} className="min-h-[104px] min-w-0 bg-white/[0.025] p-3">
-            <div className="flex items-center justify-between text-sky-300"><Icon size={16}/>{Number.isFinite(direction) && <DirectionArrow degrees={direction}/>}</div>
-            <p className="mt-3 truncate text-[10px] font-medium text-white/45">{label}</p>
-            <p className="mt-0.5 tabular-nums text-xl font-semibold text-white">{metricValue}<span className="ml-1 text-[10px] font-medium text-white/45">{unit}</span></p>
-            {detail && <p className="mt-1 text-[10px] font-semibold text-sky-300">{detail}</p>}
-            {badge && <p className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[9px] font-semibold ${badge.className}`} title={t("marine.pressureCondition")}>{badge.label}</p>}
+      <div className="grid auto-cols-[minmax(148px,1fr)] grid-flow-col gap-1.5 overflow-x-auto pb-1 lg:grid-flow-row lg:grid-cols-5 lg:overflow-visible lg:pb-0">
+        {metrics.map(({ icon: Icon, accent, label, value: metricValue, unit, direction, detail, statuses }) => (
+          <article key={label} className="relative flex h-[108px] min-w-0 flex-col overflow-hidden border border-[#30343a] bg-[#121519] p-2.5 shadow-[3px_3px_0_#08090a]">
+            <span className="absolute inset-x-0 top-0 h-0.5" style={{ backgroundColor: accent }}/>
+            <div className="flex items-center justify-between gap-2" style={{ color: accent }}>
+              <Icon size={16}/>
+              {Number.isFinite(direction) && <DirectionArrow degrees={direction}/>}
+              {statuses?.length > 0 && <div className="flex min-w-0 gap-1">{statuses.map((status) => <span key={status.label} className={`truncate border border-current/20 px-1 py-0.5 font-mono text-[7px] font-bold uppercase ${status.className}`}>{status.label}</span>)}</div>}
+            </div>
+            <p className="mt-auto truncate font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-[#6f7781]">{label}</p>
+            <p className="mt-0.5 tabular-nums font-mono text-[21px] font-bold leading-none text-[#f7f3e8]">{metricValue}<span className="ml-1 text-[9px] font-bold text-[#777f89]">{unit}</span></p>
+            <p className="mt-1 min-h-3 truncate font-mono text-[8px] font-bold" style={{ color: accent }}>{detail || "\u00a0"}</p>
           </article>
         ))}
-        </div>
       </div>
     </section>
   );
@@ -235,42 +215,41 @@ function WaveTrend({ hours, t }) {
   const range = Math.max(max - min, 0.25);
   const coordinates = points.map((hour, index) => `${(index / (points.length - 1)) * 100},${31 - ((hour.significantWaveHeightM - min) / range) * 23}`).join(" ");
   return (
-    <section className="min-h-[120px] min-w-0 rounded-lg border border-white/[0.065] bg-white/[0.025] px-3 py-[11px]">
-      <div className="flex items-center justify-between"><h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/60">{t("marine.waveTrend")}</h3><span className="text-[10px] tabular-nums text-white/40">{value(min)}–{value(max)} m</span></div>
+    <section className="min-h-[120px] min-w-0 border border-[#30343a] bg-[#111417] px-3 py-[11px] shadow-[3px_3px_0_#08090a]">
+      <div className="flex items-center justify-between"><h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#aeb5be]">// {t("marine.waveTrend")}</h3><span className="border border-[#3a4048] px-1.5 py-0.5 font-mono text-[9px] tabular-nums text-[#ffe100]">{value(min)}–{value(max)} m</span></div>
       <svg className="mt-2 h-[74px] w-full overflow-visible" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true">
-        <defs><linearGradient id="marine-wave-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#38bdf8" stopOpacity="0.5"/><stop offset="1" stopColor="#38bdf8" stopOpacity="0.03"/></linearGradient></defs>
-        <line x1="0" y1="35" x2="100" y2="35" stroke="rgba(255,255,255,.08)" vectorEffect="non-scaling-stroke"/>
-        <polygon points={`0,36 ${coordinates} 100,36`} fill="url(#marine-wave-area)"/>
-        <polyline points={coordinates} fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+        <line x1="0" y1="35" x2="100" y2="35" stroke="#343a42" vectorEffect="non-scaling-stroke"/>
+        <polygon points={`0,36 ${coordinates} 100,36`} fill="rgba(53,100,244,.22)"/>
+        <polyline points={coordinates} fill="none" stroke="#6ee7f5" strokeWidth="2" strokeLinejoin="miter" vectorEffect="non-scaling-stroke"/>
       </svg>
-      <div className="flex justify-between text-[9px] font-medium text-white/35"><span>{points[0].time}</span><span>{points[Math.floor(points.length / 2)].time}</span><span>{points.at(-1).time}</span></div>
+      <div className="flex justify-between font-mono text-[8px] font-bold text-[#626a74]"><span>{points[0].time}</span><span>{points[Math.floor(points.length / 2)].time}</span><span>{points.at(-1).time}</span></div>
     </section>
   );
 }
 
 function TideEvents({ tides, locale, t }) {
   return (
-    <section className="min-h-[120px] min-w-0 rounded-lg border border-white/[0.065] bg-white/[0.025] px-3 py-[11px]">
-      <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/60">{t("marine.nextTides")}</h3>
-      <div className="mt-2 grid gap-1.5">
+    <section className="min-h-[120px] min-w-0 border border-[#30343a] bg-[#111417] px-3 py-[11px] shadow-[3px_3px_0_#08090a]">
+      <h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#aeb5be]">// {t("marine.nextTides")}</h3>
+      <div className="mt-2 grid gap-px bg-[#30343a]">
         {tides.length ? tides.slice(0, 4).map((event, index) => {
           const high = event.type.includes("high");
-          return <div key={`${event.time}-${index}`} className="flex items-center gap-2 rounded-md bg-white/[0.045] px-2.5 py-1.5">
-            <span className={`grid h-6 w-6 place-items-center rounded-full ${high ? "bg-sky-400/15 text-sky-300" : "bg-teal-400/15 text-teal-300"}`}>{high ? <ArrowUp size={12}/> : <ArrowDown size={12}/>}</span>
-            <span className="min-w-0 flex-1 text-[10px] font-medium text-white/55">{high ? t("marine.highTide") : t("marine.lowTide")}</span>
-            <strong className="text-[11px] tabular-nums text-white/85">{tideTime(event, locale)}</strong>
-            <span className="w-11 text-right text-[10px] tabular-nums text-white/45">{value(event.heightM)} m</span>
+          return <div key={`${event.time}-${index}`} className="flex items-center gap-2 bg-[#171a1e] px-2.5 py-1.5 font-mono">
+            <span className={`grid h-5 w-5 place-items-center border ${high ? "border-[#3564f4] text-[#6ee7f5]" : "border-[#19b56b] text-[#5ee39a]"}`}>{high ? <ArrowUp size={11}/> : <ArrowDown size={11}/>}</span>
+            <span className="min-w-0 flex-1 text-[9px] font-bold uppercase text-[#777f89]">{high ? t("marine.highTide") : t("marine.lowTide")}</span>
+            <strong className="text-[10px] tabular-nums text-[#f7f3e8]">{tideTime(event, locale)}</strong>
+            <span className="w-11 text-right text-[9px] tabular-nums text-[#aeb5be]">{value(event.heightM)} m</span>
           </div>;
-        }) : <p className="py-6 text-center text-[10px] text-white/35">{t("marine.noTides")}</p>}
+        }) : <p className="bg-[#171a1e] py-6 text-center font-mono text-[9px] text-[#626a74]">{t("marine.noTides")}</p>}
       </div>
     </section>
   );
 }
 
 function ForecastRow({ icon: Icon, label, hours, currentTime, render }) {
-  return <tr className="border-t border-white/[0.06]">
-    <th className="sticky left-0 z-10 bg-[#202124] px-3 py-2 text-left font-medium text-white/60"><span className="flex items-center gap-2"><Icon size={13} className="text-sky-300"/>{label}</span></th>
-    {hours.map((hour) => <td key={hour.time} className={`relative border-l border-white/[0.055] px-2 py-2 tabular-nums text-white/80 ${hour.time === currentTime ? "bg-amber-300/[0.055] before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-amber-300" : ""}`}>{render(hour)}</td>)}
+  return <tr>
+    <th className="sticky left-0 z-10 border-r border-t border-[#2a2f35] bg-[#15181c] px-3 py-2 text-left font-bold uppercase text-[#8b939d]"><span className="flex items-center gap-2"><Icon size={13} className="text-[#6ee7f5]"/>{label}</span></th>
+    {hours.map((hour) => <td key={hour.time} className={`relative border-l border-t border-[#252a30] px-2 py-2 tabular-nums ${hour.time === currentTime ? "bg-[#ffe100] font-bold text-[#0b0d0f]" : "text-[#c3c8ce]"}`}>{render(hour)}</td>)}
   </tr>;
 }
 
