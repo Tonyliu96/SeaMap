@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Compass, Droplets, Gauge, Thermometer, Timer, Waves, Wind, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Compass, Droplets, Thermometer, Timer, Waves, Wind, X } from "lucide-react";
 import { fetchMarineForecast } from "../services/marineForecast.js";
 import { oppositeBearing } from "../utils/mapVectors.js";
+import MarineSwellChart from "./MarineSwellChart.jsx";
+import MarineTideChart from "./MarineTideChart.jsx";
+import MarineCurrentConditions from "./MarineCurrentConditions.jsx";
 import ResizablePanelHandle, { useResizablePanel } from "./ResizablePanelHandle.jsx";
 import { Badge, IconButton } from "./ui.jsx";
+
+// Forecast wind cells above this speed receive a soft strong-wind warning.
+const STRONG_WIND_THRESHOLD_KMH = 30;
 
 function value(number, digits = 1) {
   return Number.isFinite(number) ? number.toFixed(digits) : "–";
@@ -12,14 +18,6 @@ function value(number, digits = 1) {
 function shortDate(date, locale) {
   const parsed = new Date(`${date}T12:00:00`);
   return new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short" }).format(parsed);
-}
-
-function tideTime(event, locale) {
-  const parsed = new Date(event.time);
-  if (!Number.isNaN(parsed.getTime())) {
-    return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", hour12: false }).format(parsed);
-  }
-  return String(event.time || "–").slice(-5);
 }
 
 const STATE_TIME_ZONES = {
@@ -60,6 +58,18 @@ function closestHour(hours, currentHour) {
     const previous = Number.parseInt(closest.time, 10);
     return Math.abs(candidate - currentHour) < Math.abs(previous - currentHour) ? hour : closest;
   }, hours[0]);
+}
+
+function updatedTimeLabel(updatedAt, locale, timeZone) {
+  if (!updatedAt) return null;
+  const timestamp = new Date(updatedAt);
+  if (Number.isNaN(timestamp.getTime())) return null;
+  return new Intl.DateTimeFormat(locale, {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(timestamp);
 }
 
 export default function MarineForecastPanel({ location, onClose, language, t }) {
@@ -144,6 +154,11 @@ export default function MarineForecastPanel({ location, onClose, language, t }) 
     return day?.date === localClock.date ? closestHour(hours, localClock.hour)?.time : null;
   }, [day?.date, hours, localClock.date, localClock.hour]);
   const locale = language === "zh" ? "zh-CN" : "en-AU";
+  const updatedTime = updatedTimeLabel(
+    forecast?.updatedAt,
+    locale,
+    stationTimeZone(forecast?.location ?? location)
+  );
 
   if (!location) return null;
 
@@ -179,11 +194,11 @@ export default function MarineForecastPanel({ location, onClose, language, t }) 
               <IntervalControl interval={interval} setInterval={setIntervalOverride} className="sticky right-0 ml-auto flex sm:hidden"/>
             </div>
 
-            {current && <CurrentConditions hour={current} t={t} />}
+            {current && <MarineCurrentConditions hour={current} t={t} />}
 
             <div className="my-2 grid gap-2 md:grid-cols-[1.4fr_0.8fr]">
-              <WaveTrend hours={day?.hourly ?? []} t={t}/>
-              <TideEvents tides={day?.tides ?? []} locale={locale} t={t}/>
+              <MarineSwellChart hours={day?.hourly ?? []} currentTime={day?.date === localClock.date ? closestHour(day?.hourly, localClock.hour)?.time : null} t={t}/>
+              <MarineTideChart tides={day?.tides ?? []} currentTime={day?.date === localClock.date ? `${String(localClock.hour).padStart(2, "0")}:00` : null} locale={locale} t={t}/>
             </div>
 
             <div className="mb-1.5 mt-3 flex items-center justify-between">
@@ -197,31 +212,30 @@ export default function MarineForecastPanel({ location, onClose, language, t }) 
                   {hours.map((hour) => {
                     const isCurrent = hour.time === currentColumnTime;
                     return (
-                      <th key={hour.time} className={`relative min-w-16 border-l border-aqua-soft/50 px-1 pb-2 pt-4 font-semibold tabular-nums ${isCurrent ? "border-x border-primary bg-primary/10 text-primary" : ""}`}>
-                        {isCurrent && <span className="absolute left-1/2 top-0.5 -translate-x-1/2 rounded-full bg-primary px-1.5 py-0.5 text-[7px] leading-none text-white">▲ {t("marine.now")}</span>}
+                      <th key={hour.time} className={`relative min-w-16 border-l border-aqua-soft/50 px-1 pb-2 pt-6 font-semibold tabular-nums ${isCurrent ? "border-x border-primary bg-primary/10 text-primary" : ""}`}>
+                        {isCurrent && <span className="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-2 py-0.5 text-[7px] leading-none text-white">▲ {t("marine.now")}</span>}
                         <span className="block">{hour.time}</span>
                       </th>
                     );
                   })}
                 </tr></thead>
                 <tbody>
-                  <ForecastRow icon={Wind} label={t("marine.windKmh")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.windSpeedKmh, 0)}/>
+                  <ForecastRow icon={Wind} label={t("marine.windKmh")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} valueAccessor={(hour) => hour.windSpeedKmh} warningThreshold={STRONG_WIND_THRESHOLD_KMH} render={(hour) => value(hour.windSpeedKmh, 0)}/>
                   <ForecastRow icon={Compass} label={t("marine.windDirection")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => <Direction degrees={hour.windDirectionDegrees} label={hour.windDirection}/>}/>
-                  <ForecastRow icon={Waves} label={t("marine.significantWave")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.significantWaveHeightM)}/>
+                  <ForecastRow groupStart icon={Waves} label={t("marine.significantWave")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} valueAccessor={(hour) => hour.significantWaveHeightM} render={(hour) => value(hour.significantWaveHeightM)}/>
+                  <ForecastRow groupStart className={showMoreMetrics ? "table-row" : "hidden md:table-row"} icon={Droplets} label={t("marine.swellHeight")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.swellHeightM)}/>
                   <ForecastRow icon={Timer} label={t("marine.swellPeriod")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.swellPeriodSeconds)}/>
-                  <ForecastRow className={showMoreMetrics ? "table-row" : "hidden md:table-row"} icon={Droplets} label={t("marine.swellHeight")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.swellHeightM)}/>
                   <ForecastRow className={showMoreMetrics ? "table-row" : "hidden md:table-row"} icon={ArrowDown} label={t("marine.swellDirection")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => <Direction degrees={hour.swellDirectionDegrees} label={hour.swellDirection}/>}/>
-                  <ForecastRow className={showMoreMetrics ? "table-row" : "hidden md:table-row"} icon={Thermometer} label={t("marine.waterTemperature")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.waterTemperatureC, 0)}/>
-                  <ForecastRow className={showMoreMetrics ? "table-row" : "hidden md:table-row"} icon={Gauge} label={t("marine.pressure")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.pressureHpa, 0)}/>
+                  <ForecastRow groupStart className={showMoreMetrics ? "table-row" : "hidden md:table-row"} icon={Thermometer} label={t("marine.waterTemperature")} hours={hours} currentTime={currentColumnTime} sticky={manualIntervalNeedsScroll} render={(hour) => value(hour.waterTemperatureC, 0)}/>
                 </tbody>
               </table>
             </div>
             <button type="button" className="mt-2 w-full rounded-lg border border-aqua-soft bg-aqua-soft/20 px-3 py-2 text-xs font-semibold text-primary transition hover:border-primary hover:bg-aqua-soft/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden" onClick={() => setShowMoreMetrics((value) => !value)}>
               {showMoreMetrics ? t("marine.lessMetrics") : t("marine.moreMetrics")}
             </button>
-            <footer className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-aqua-soft/60 pt-2 text-[10px] text-steel">
+            <footer className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-aqua-soft/60 pb-1 pr-10 pt-2 text-[10px] text-steel">
               <span>{t("marine.forecastGuidance")}</span>
-              <span>{forecast.cacheStatus === "hit" ? t("marine.cached") : t("marine.updated")}</span>
+              {updatedTime && <span className="tabular-nums"><span className="capitalize">{t("marine.updated")}</span> {updatedTime}</span>}
             </footer>
           </>
         )}
@@ -240,95 +254,29 @@ function IntervalControl({ interval, setInterval, className = "" }) {
   );
 }
 
-function CurrentConditions({ hour, t }) {
-  const pressureDelta = Number.isFinite(hour.pressureDeltaHpa)
-    ? `${hour.pressureDeltaHpa > 0 ? "+" : ""}${value(hour.pressureDeltaHpa, 0)} hPa · ${t("marine.pressureThreeHours")}`
-    : t("marine.pressureNoHistory");
-  const pressureTrend = {
-    rising: { label: t("marine.pressureRising"), className: "bg-aqua-soft/40 text-primary" },
-    stable: { label: t("marine.pressureStable"), className: "bg-steel/10 text-ink" },
-    falling: { label: t("marine.pressureFalling"), className: "bg-coral/15 text-coral-ink" }
-  }[hour.pressureTrend];
-  const fishingCondition = {
-    veryGood: { label: t("marine.pressureVeryGood"), className: "bg-aqua-soft/40 text-primary" },
-    good: { label: t("marine.pressureGood"), className: "bg-steel/10 text-ink" },
-    poor: { label: t("marine.pressurePoor"), className: "bg-coral/15 text-coral-ink" }
-  }[hour.fishingCondition];
-  const metrics = [
-    { icon: Waves, tone: "text-ink", label: t("marine.swellHeight"), value: value(hour.swellHeightM), unit: "m", direction: hour.swellDirectionDegrees, detail: `${t("marine.significantWave")} ${value(hour.significantWaveHeightM)} m · ${hour.swellDirection || "–"}` },
-    { icon: Wind, tone: "text-primary", label: t("marine.windKmh"), value: value(hour.windSpeedKmh, 0), unit: "km/h", direction: hour.windDirectionDegrees, detail: hour.windDirection },
-    { icon: Timer, tone: "text-steel", label: t("marine.swellPeriod"), value: value(hour.swellPeriodSeconds), unit: "s" },
-    { icon: Thermometer, tone: "text-sand-ink", label: t("marine.waterTemperature"), value: value(hour.waterTemperatureC, 0), unit: "°C" },
-    { icon: Gauge, tone: "text-coral", label: t("marine.pressure"), value: value(hour.pressureHpa, 0), unit: "hPa", detail: pressureDelta, statuses: [pressureTrend, fishingCondition].filter(Boolean) }
-  ];
-  return (
-    <section className="pt-1">
-      <div className="mb-1.5 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-ink-strong dark:text-dark-ink">{t("marine.currentConditions")}</h3>
-        <Badge>Live · {hour.time}</Badge>
-      </div>
-      <div className="grid auto-cols-[minmax(148px,1fr)] grid-flow-col gap-1.5 overflow-x-auto pb-1 lg:grid-flow-row lg:grid-cols-5 lg:overflow-visible lg:pb-0">
-        {metrics.map(({ icon: Icon, tone, label, value: metricValue, unit, direction, detail, statuses }) => (
-          <article key={label} className="relative flex h-[88px] min-w-0 flex-col overflow-hidden rounded-2xl border border-aqua-soft/70 bg-aqua-soft/20 p-2 transition duration-200 hover:border-primary/40 hover:bg-aqua-soft/30 dark:border-white/10 dark:bg-white/[0.05] sm:h-[112px] sm:p-3">
-            <div className={`flex items-center justify-between gap-2 ${tone}`}>
-              <Icon size={16}/>
-              {Number.isFinite(direction) && <DirectionArrow degrees={direction}/>}
-              {statuses?.length > 0 && <div className="flex min-w-0 gap-1">{statuses.map((status) => <span key={status.label} className={`truncate rounded-full px-1.5 py-0.5 text-[8px] font-semibold ${status.className}`}>{status.label}</span>)}</div>}
-            </div>
-            <p className="mt-auto truncate text-xs font-medium text-steel">{label}</p>
-            <p className="mt-0.5 tabular-nums text-[21px] font-bold leading-none text-ink-strong dark:text-dark-ink">{metricValue}<span className="ml-1 text-[10px] font-medium text-steel">{unit}</span></p>
-            <p className={`mt-1 min-h-3 truncate text-[10px] font-medium ${tone}`}>{detail || "\u00a0"}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
+function relativeCellTone(number, minimum, maximum, warningThreshold) {
+  if (!Number.isFinite(number)) return "";
+  if (Number.isFinite(warningThreshold) && number > warningThreshold) return "bg-coral/15";
+  const ratio = maximum === minimum ? 0.5 : (number - minimum) / (maximum - minimum);
+  if (ratio < 0.25) return "bg-aqua-soft/10";
+  if (ratio < 0.5) return "bg-aqua-soft/20";
+  if (ratio < 0.75) return "bg-aqua-soft/30";
+  return "bg-aqua-soft/40";
 }
 
-function WaveTrend({ hours, t }) {
-  const points = hours.filter((hour) => Number.isFinite(hour.significantWaveHeightM));
-  if (points.length < 2) return null;
-  const values = points.map((hour) => hour.significantWaveHeightM);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = Math.max(max - min, 0.25);
-  const coordinates = points.map((hour, index) => `${(index / (points.length - 1)) * 100},${31 - ((hour.significantWaveHeightM - min) / range) * 23}`).join(" ");
-  return (
-    <section className="min-h-[96px] min-w-0 rounded-2xl border border-aqua-soft/70 bg-surface px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:min-h-[120px] sm:py-[11px]">
-      <div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-ink-strong dark:text-dark-ink">{t("marine.waveTrend")}</h3><Badge tone="steel">{value(min)}–{value(max)} m</Badge></div>
-      <svg className="mt-1 h-[50px] w-full overflow-visible sm:mt-2 sm:h-[74px]" viewBox="0 0 100 36" preserveAspectRatio="none" aria-hidden="true">
-        <line className="text-aqua-soft" x1="0" y1="35" x2="100" y2="35" stroke="currentColor" vectorEffect="non-scaling-stroke"/>
-        <polygon className="fill-aqua/25" points={`0,36 ${coordinates} 100,36`}/>
-        <polyline className="text-ink" points={coordinates} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-      </svg>
-      <div className="flex justify-between text-[9px] font-medium tabular-nums text-steel"><span>{points[0].time}</span><span>{points[Math.floor(points.length / 2)].time}</span><span>{points.at(-1).time}</span></div>
-    </section>
-  );
-}
-
-function TideEvents({ tides, locale, t }) {
-  return (
-    <section className="min-h-[96px] min-w-0 rounded-2xl border border-aqua-soft/70 bg-surface px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:min-h-[120px] sm:py-[11px]">
-      <h3 className="text-sm font-semibold text-ink-strong dark:text-dark-ink">{t("marine.nextTides")}</h3>
-      <div className="mt-2 grid gap-1">
-        {tides.length ? tides.slice(0, 4).map((event, index) => {
-          const high = event.type.includes("high");
-          return <div key={`${event.time}-${index}`} className="flex items-center gap-2 rounded-lg bg-aqua-soft/20 px-2.5 py-1.5">
-            <span className={`grid h-6 w-6 place-items-center rounded-full ${high ? "bg-primary/10 text-primary" : "bg-ink/10 text-ink"}`}>{high ? <ArrowUp size={12}/> : <ArrowDown size={12}/>}</span>
-            <span className="min-w-0 flex-1 text-[10px] font-medium text-steel">{high ? t("marine.highTide") : t("marine.lowTide")}</span>
-            <strong className="text-xs tabular-nums text-ink-strong dark:text-dark-ink">{tideTime(event, locale)}</strong>
-            <span className="w-11 text-right text-[10px] tabular-nums text-ink">{value(event.heightM)} m</span>
-          </div>;
-        }) : <p className="rounded-lg bg-aqua-soft/20 py-6 text-center text-xs text-steel">{t("marine.noTides")}</p>}
-      </div>
-    </section>
-  );
-}
-
-function ForecastRow({ icon: Icon, label, hours, currentTime, sticky, className = "", render }) {
+function ForecastRow({ icon: Icon, label, hours, currentTime, sticky, className = "", groupStart = false, valueAccessor, warningThreshold, render }) {
+  const rowValues = valueAccessor ? hours.map(valueAccessor).filter(Number.isFinite) : [];
+  const minimum = rowValues.length ? Math.min(...rowValues) : 0;
+  const maximum = rowValues.length ? Math.max(...rowValues) : 0;
+  const topBorder = groupStart ? "border-t border-t-aqua-soft" : "border-t border-t-aqua-soft/60";
   return <tr className={className}>
-    <th className={`w-28 border-r border-t border-aqua-soft/60 bg-bg px-2 py-2 text-left font-semibold text-steel dark:bg-dark-surface ${sticky ? "sticky left-0 z-10" : ""}`}><span className="flex items-center gap-1.5 whitespace-normal"><Icon size={12} className="shrink-0 text-primary"/><span>{label}</span></span></th>
-    {hours.map((hour, index) => <td key={hour.time} className={`relative min-w-16 whitespace-nowrap border-l border-t border-aqua-soft/50 px-1 py-2 text-xs tabular-nums ${hour.time === currentTime ? "border-x border-primary bg-primary/10 font-bold text-primary" : index % 2 ? "bg-bg/60 text-ink-strong" : "text-ink-strong"}`}>{render(hour)}</td>)}
+    <th className={`w-28 border-r border-r-aqua-soft/60 bg-bg px-2 py-2 text-left font-semibold text-steel dark:bg-dark-surface ${topBorder} ${sticky ? "sticky left-0 z-10" : ""}`}><span className="flex items-center gap-1.5 whitespace-normal"><Icon size={12} className="shrink-0 text-primary"/><span>{label}</span></span></th>
+    {hours.map((hour, index) => {
+      const rowValue = valueAccessor?.(hour);
+      const tone = valueAccessor ? relativeCellTone(rowValue, minimum, maximum, warningThreshold) : index % 2 ? "bg-bg/60" : "";
+      const isCurrent = hour.time === currentTime;
+      return <td key={hour.time} className={`relative min-w-16 whitespace-nowrap border-l border-l-aqua-soft/50 px-1 py-2 text-xs tabular-nums text-ink-strong ${topBorder} ${tone} ${isCurrent ? "border-x border-x-primary font-bold" : ""}`}>{render(hour)}</td>;
+    })}
   </tr>;
 }
 
